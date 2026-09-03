@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../models/user_role.dart';
-import '../../widgets/home_servant_logo.dart';
 import '../../widgets/pill_button.dart';
 
 class GetStartedScreen extends StatelessWidget {
@@ -52,10 +51,7 @@ class GetStartedScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       const Spacer(flex: 2),
-                      const HomeServantLogo(
-                        role: UserRole.tenant,
-                        iconSize: 64,
-                      ),
+                      SvgPicture.asset('assets/icons/logo4.svg', width: 110),
                       const Spacer(flex: 2),
                       Text(
                         'Get Started with\nHome Servant',

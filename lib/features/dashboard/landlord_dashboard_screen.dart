@@ -10,10 +10,6 @@ import 'models/property.dart';
 import 'profile_screen.dart';
 import 'widgets/bottom_nav.dart';
 
-/// No landlord-facing dashboard frame was included in the Figma export, so
-/// this reuses the same visual language (rounded cards, pill buttons,
-/// floating nav) inverted to the landlord gold theme, listing the
-/// landlord's own properties instead of a search feed.
 class LandlordDashboardScreen extends StatefulWidget {
   const LandlordDashboardScreen({super.key});
 
@@ -44,7 +40,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const HomeServantLogo(role: UserRole.landlord, iconSize: 40),
+                        HomeServantLogo(role: UserRole.landlord, iconSize: 40, color: theme.foreground),
                         Stack(
                           clipBehavior: Clip.none,
                           children: [

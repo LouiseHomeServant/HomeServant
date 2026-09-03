@@ -37,15 +37,32 @@ class _SignupTenant1ScreenState extends State<SignupTenant1Screen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 12),
-          Center(child: HomeServantLogo(role: _role, iconSize: 56, textSize: 24)),
+          Center(child: HomeServantLogo(role: _role, iconSize: 56)),
           const SizedBox(height: 28),
-          Text('Welcome Onboard !!!!', textAlign: TextAlign.center, style: AppTextStyles.heading(color: _role.foreground, size: 24)),
+          Text(
+            'Welcome Onboard',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.heading(color: _role.foreground, size: 24),
+          ),
           const SizedBox(height: 28),
-          _Field(label: 'Enter your Name', color: _role.foreground, controller: _name),
+          _Field(
+            label: 'Enter your Name',
+            color: _role.foreground,
+            controller: _name,
+          ),
           const SizedBox(height: 18),
-          _Field(label: 'Phone Number', color: _role.foreground, controller: _phone, keyboardType: TextInputType.phone),
+          _Field(
+            label: 'Phone Number',
+            color: _role.foreground,
+            controller: _phone,
+            keyboardType: TextInputType.phone,
+          ),
           const SizedBox(height: 18),
-          _Field(label: 'Referral code (optional)', color: _role.foreground, controller: _referral),
+          _Field(
+            label: 'Referral code (optional)',
+            color: _role.foreground,
+            controller: _referral,
+          ),
           const SizedBox(height: 28),
           PillButton(
             label: 'Continue',
@@ -84,9 +101,16 @@ class _Field extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.body(color: color, weight: FontWeight.w600)),
+        Text(
+          label,
+          style: AppTextStyles.body(color: color, weight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
-        PillTextField(hint: '', controller: controller, keyboardType: keyboardType),
+        PillTextField(
+          hint: '',
+          controller: controller,
+          keyboardType: keyboardType,
+        ),
       ],
     );
   }

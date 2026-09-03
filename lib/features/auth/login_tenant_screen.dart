@@ -41,7 +41,7 @@ class _LoginTenantScreenState extends State<LoginTenantScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 24),
-          Center(child: HomeServantLogo(role: _role, iconSize: 60, textSize: 26)),
+          Center(child: HomeServantLogo(role: _role, iconSize: 60)),
           const SizedBox(height: 64),
           PillTextField(hint: 'Username', controller: _username),
           const SizedBox(height: 16),
@@ -64,7 +64,7 @@ class _LoginTenantScreenState extends State<LoginTenantScreen> {
                     const TextSpan(text: "Don't have an account? "),
                     TextSpan(
                       text: 'Sign Up',
-                      style: AppTextStyles.body(color: _role.accent, weight: FontWeight.w700),
+                      style: AppTextStyles.body(color: _role.emphasis, weight: FontWeight.w700),
                     ),
                   ],
                 ),

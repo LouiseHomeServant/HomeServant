@@ -5,7 +5,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
+import 'messages_screen.dart';
 import 'models/property.dart';
+import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'widgets/bottom_nav.dart';
 import 'widgets/property_card.dart';
@@ -21,6 +23,108 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
   static const _categories = ['House', 'Shortlet', 'Self-Con', 'Apartment'];
   int _selectedCategory = 0;
   int _navIndex = 0;
+
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  double _minRating = 0;
+  bool _sortTopRatedFirst = false;
+  bool _hasUnreadNotifications = true;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Property> get _filteredProperties {
+    final query = _searchQuery.trim().toLowerCase();
+    final selectedCategory = _categories[_selectedCategory];
+    final filtered = mockProperties.where((property) {
+      final matchesQuery = query.isEmpty ||
+          property.title.toLowerCase().contains(query) ||
+          property.location.toLowerCase().contains(query);
+      final matchesCategory = property.category == selectedCategory;
+      final matchesRating = property.rating >= _minRating;
+      return matchesQuery && matchesCategory && matchesRating;
+    }).toList();
+    if (_sortTopRatedFirst) {
+      filtered.sort((a, b) => b.rating.compareTo(a.rating));
+    }
+    return filtered;
+  }
+
+  Future<void> _openFilterSheet(DashboardTheme theme) async {
+    var minRating = _minRating;
+    var sortTopRatedFirst = _sortTopRatedFirst;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: theme.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Filters', style: AppTextStyles.heading(color: theme.onSurface, size: 18)),
+                  const SizedBox(height: 18),
+                  Text('Minimum rating', style: AppTextStyles.body(color: theme.onSurface, weight: FontWeight.w600)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    children: [
+                      for (final option in const [0.0, 4.0, 4.5])
+                        ChoiceChip(
+                          label: Text(option == 0 ? 'Any' : '${option.toStringAsFixed(1)}+'),
+                          selected: minRating == option,
+                          onSelected: (_) => setSheetState(() => minRating = option),
+                          selectedColor: theme.accent,
+                          labelStyle: AppTextStyles.body(
+                            color: minRating == option ? theme.onAccent : theme.onSurface,
+                            weight: FontWeight.w600,
+                          ),
+                          backgroundColor: theme.onSurface.withValues(alpha: 0.06),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    value: sortTopRatedFirst,
+                    onChanged: (value) => setSheetState(() => sortTopRatedFirst = value),
+                    activeColor: theme.accent,
+                    title: Text('Sort by top rated', style: AppTextStyles.body(color: theme.onSurface, weight: FontWeight.w600)),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.accent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _minRating = minRating;
+                          _sortTopRatedFirst = sortTopRatedFirst;
+                        });
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Apply', style: AppTextStyles.button(color: theme.onAccent)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +171,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                       children: [
                         Icon(
                           Icons.location_on,
-                          color: theme.accent,
+                          color: theme.locationPinColor,
                           size: 20,
                         ),
                         const SizedBox(width: 4),
@@ -82,31 +186,45 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                     ),
                     Row(
                       children: [
-                        Icon(
-                          Icons.mail_outline_rounded,
-                          color: theme.foreground,
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => MessagesScreen(theme: theme)),
+                          ),
+                          child: Icon(
+                            Icons.mail_outline_rounded,
+                            color: theme.foreground,
+                          ),
                         ),
                         const SizedBox(width: 16),
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Icon(
-                              Icons.notifications_none_rounded,
-                              color: theme.foreground,
-                            ),
-                            Positioned(
-                              top: -2,
-                              right: -2,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() => _hasUnreadNotifications = false);
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => NotificationsScreen(theme: theme)),
+                            );
+                          },
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Icon(
+                                Icons.notifications_none_rounded,
+                                color: theme.foreground,
                               ),
-                            ),
-                          ],
+                              if (_hasUnreadNotifications)
+                                Positioned(
+                                  top: -2,
+                                  right: -2,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -118,12 +236,12 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
+                          horizontal: 20,
+                          vertical: 16,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(22),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.08),
@@ -134,46 +252,47 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.search, color: AppColors.navy),
-                            const SizedBox(width: 10),
+                            const Icon(Icons.search, color: AppColors.navy, size: 24),
+                            const SizedBox(width: 12),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Search by location',
-                                    style: AppTextStyles.body(
-                                      color: AppColors.navy,
-                                      size: 14,
-                                      weight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Agege',
-                                    style: AppTextStyles.body(
-                                      color: AppColors.hintGrey,
-                                      size: 12,
-                                    ),
-                                  ),
-                                ],
+                              child: TextField(
+                                controller: _searchController,
+                                onChanged: (value) => setState(() => _searchQuery = value),
+                                style: AppTextStyles.body(color: AppColors.navy, size: 16, weight: FontWeight.w600),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  border: InputBorder.none,
+                                  hintText: 'Search by location or property',
+                                  hintStyle: AppTextStyles.body(color: AppColors.hintGrey, size: 15),
+                                ),
                               ),
                             ),
+                            if (_searchQuery.isNotEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  _searchController.clear();
+                                  setState(() => _searchQuery = '');
+                                },
+                                child: const Icon(Icons.close_rounded, color: AppColors.hintGrey, size: 20),
+                              ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: theme.accent,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        Icons.tune_rounded,
-                        color: theme.onAccent,
-                        size: 20,
+                    GestureDetector(
+                      onTap: () => _openFilterSheet(theme),
+                      child: Container(
+                        padding: const EdgeInsets.all(17),
+                        decoration: BoxDecoration(
+                          color: theme.accent,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Icon(
+                          Icons.tune_rounded,
+                          color: theme.onAccent,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],
@@ -230,15 +349,28 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
             ),
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
-          sliver: SliverList.builder(
-            itemCount: mockProperties.length,
-            itemBuilder:
-                (context, index) =>
-                    PropertyCard(property: mockProperties[index], theme: theme),
+        if (_filteredProperties.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 60),
+              child: Center(
+                child: Text(
+                  'No properties match your search',
+                  style: AppTextStyles.body(color: theme.foreground.withValues(alpha: 0.6)),
+                ),
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+            sliver: SliverList.builder(
+              itemCount: _filteredProperties.length,
+              itemBuilder:
+                  (context, index) =>
+                      PropertyCard(property: _filteredProperties[index], theme: theme),
+            ),
           ),
-        ),
       ],
     );
   }

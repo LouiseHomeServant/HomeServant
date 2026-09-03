@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/user_role.dart';
 import '../../widgets/home_servant_logo.dart';
 import '../../widgets/pill_button.dart';
 import '../../widgets/pill_text_field.dart';
 import '../../widgets/themed_scaffold.dart';
+import '../../widgets/upload_picker.dart';
 
 class SignupLandlord1Screen extends StatefulWidget {
   const SignupLandlord1Screen({super.key, required this.onContinue});
@@ -19,8 +21,15 @@ class _SignupLandlord1ScreenState extends State<SignupLandlord1Screen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _houseAddress = TextEditingController();
-  String? _certificateFileName;
+  PickedUpload? _certificate;
   static const _role = UserRole.landlord;
+
+  Future<void> _pickCertificate() async {
+    final picked = await pickUpload(context);
+    if (picked != null) {
+      setState(() => _certificate = picked);
+    }
+  }
 
   @override
   void dispose() {
@@ -38,21 +47,38 @@ class _SignupLandlord1ScreenState extends State<SignupLandlord1Screen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 12),
-          Center(child: HomeServantLogo(role: _role, iconSize: 56, textSize: 24)),
+          Center(child: HomeServantLogo(role: _role, iconSize: 56)),
           const SizedBox(height: 28),
-          Text('Welcome Onboard !!!!', textAlign: TextAlign.center, style: AppTextStyles.heading(color: _role.foreground, size: 24)),
+          Text(
+            'Welcome Onboard',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.heading(color: _role.foreground, size: 24),
+          ),
           const SizedBox(height: 28),
-          _Field(label: 'Enter your Name', color: _role.foreground, controller: _name),
+          _Field(
+            label: 'Enter your Name',
+            color: _role.foreground,
+            controller: _name,
+          ),
           const SizedBox(height: 18),
-          _Field(label: 'Phone Number', color: _role.foreground, controller: _phone, keyboardType: TextInputType.phone),
+          _Field(
+            label: 'Phone Number',
+            color: _role.foreground,
+            controller: _phone,
+            keyboardType: TextInputType.phone,
+          ),
           const SizedBox(height: 18),
-          _Field(label: 'House Address', color: _role.foreground, controller: _houseAddress),
+          _Field(
+            label: 'House Address',
+            color: _role.foreground,
+            controller: _houseAddress,
+          ),
           const SizedBox(height: 22),
           PillOutlineButton(
-            label: _certificateFileName ?? 'Certificate of Ownership',
-            textColor: _role.foreground,
+            label: _certificate?.fileName ?? 'Certificate of Ownership',
+            textColor: AppColors.navy,
             icon: Icons.upload_file_rounded,
-            onPressed: () => setState(() => _certificateFileName = 'certificate.pdf'),
+            onPressed: _pickCertificate,
           ),
           const SizedBox(height: 28),
           PillButton(
@@ -92,9 +118,16 @@ class _Field extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.body(color: color, weight: FontWeight.w600)),
+        Text(
+          label,
+          style: AppTextStyles.body(color: color, weight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
-        PillTextField(hint: '', controller: controller, keyboardType: keyboardType),
+        PillTextField(
+          hint: '',
+          controller: controller,
+          keyboardType: keyboardType,
+        ),
       ],
     );
   }

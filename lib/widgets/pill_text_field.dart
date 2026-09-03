@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 
@@ -17,6 +18,10 @@ class PillTextField extends StatelessWidget {
     this.onTap,
     this.readOnly = false,
     this.validator,
+    this.inputFormatters,
+    this.minLines,
+    this.maxLines = 1,
+    this.borderRadius = 28,
   });
 
   final String hint;
@@ -29,6 +34,10 @@ class PillTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final bool readOnly;
   final String? Function(String?)? validator;
+  final List<TextInputFormatter>? inputFormatters;
+  final int? minLines;
+  final int? maxLines;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +48,9 @@ class PillTextField extends StatelessWidget {
       onTap: onTap,
       readOnly: readOnly,
       validator: validator,
+      inputFormatters: inputFormatters,
+      minLines: minLines,
+      maxLines: maxLines,
       style: AppTextStyles.body(color: textColor, size: 16),
       decoration: InputDecoration(
         hintText: hint,
@@ -48,19 +60,19 @@ class PillTextField extends StatelessWidget {
         suffixIcon: trailing,
         contentPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: const BorderSide(color: AppColors.gold, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(borderRadius),
           borderSide: const BorderSide(color: Colors.redAccent, width: 1.2),
         ),
       ),

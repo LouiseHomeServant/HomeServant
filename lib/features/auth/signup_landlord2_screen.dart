@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/user_role.dart';
@@ -8,6 +8,7 @@ import '../../widgets/home_servant_logo.dart';
 import '../../widgets/pill_button.dart';
 import '../../widgets/pill_text_field.dart';
 import '../../widgets/themed_scaffold.dart';
+import '../../widgets/upload_picker.dart';
 
 class SignupLandlord2Screen extends StatefulWidget {
   const SignupLandlord2Screen({super.key, required this.onFinish});
@@ -22,49 +23,28 @@ class _SignupLandlord2ScreenState extends State<SignupLandlord2Screen> {
   static const _idOptions = ['NIN', "Driver's License", "Voter's Card", 'International Passport'];
   static const _role = UserRole.landlord;
 
-  String _address = '15 Seyi Coker Street, AGEGE';
-  String _identification = 'NIN';
-  File? _photo;
+  final _idNumberController = TextEditingController();
+  String? _identification;
+  PickedUpload? _document;
+  PickedUpload? _photo;
+
+  @override
+  void dispose() {
+    _idNumberController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickPhoto() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final picked = await pickUpload(context);
     if (picked != null) {
-      setState(() => _photo = File(picked.path));
+      setState(() => _photo = picked);
     }
   }
 
-  Future<void> _editAddress() async {
-    final controller = TextEditingController(text: _address);
-    final result = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          left: 20, right: 20, top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Your address', style: AppTextStyles.heading(color: AppColors.navy, size: 18)),
-            const SizedBox(height: 14),
-            PillTextField(hint: 'Enter your address', controller: controller),
-            const SizedBox(height: 16),
-            PillButton(
-              label: 'Save',
-              backgroundColor: AppColors.navy,
-              textColor: Colors.white,
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (result != null && result.isNotEmpty) {
-      setState(() => _address = result);
+  Future<void> _pickDocument() async {
+    final picked = await pickUpload(context);
+    if (picked != null) {
+      setState(() => _document = picked);
     }
   }
 
@@ -86,8 +66,29 @@ class _SignupLandlord2ScreenState extends State<SignupLandlord2Screen> {
         ),
       ),
     );
-    if (result != null) {
-      setState(() => _identification = result);
+    if (result != null && result != _identification) {
+      setState(() {
+        _identification = result;
+        _idNumberController.clear();
+      });
+    }
+  }
+
+  // Standard Nigerian ID number formats, keyed by the option label in
+  // _idOptions, so the number field only accepts/shapes input the way
+  // each issuing body actually formats it.
+  ({String hint, int maxLength, bool numeric})? get _idNumberFormat {
+    switch (_identification) {
+      case 'NIN':
+        return (hint: 'Enter your 11-digit NIN', maxLength: 11, numeric: true);
+      case "Driver's License":
+        return (hint: 'e.g. ABC12345D12', maxLength: 12, numeric: false);
+      case "Voter's Card":
+        return (hint: "Enter your 19-character Voter's Card (VIN) number", maxLength: 19, numeric: false);
+      case 'International Passport':
+        return (hint: 'e.g. A12345678', maxLength: 9, numeric: false);
+      default:
+        return null;
     }
   }
 
@@ -100,7 +101,7 @@ class _SignupLandlord2ScreenState extends State<SignupLandlord2Screen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 12),
-          Center(child: HomeServantLogo(role: _role, iconSize: 56, textSize: 24)),
+          Center(child: HomeServantLogo(role: _role, iconSize: 56)),
           const SizedBox(height: 36),
           GestureDetector(
             onTap: _pickPhoto,
@@ -113,29 +114,55 @@ class _SignupLandlord2ScreenState extends State<SignupLandlord2Screen> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: _role.accent.withValues(alpha: 0.3),
-                    backgroundImage: _photo != null ? FileImage(_photo!) : null,
-                    child: _photo == null ? Icon(Icons.person, size: 40, color: _role.foreground) : null,
+                    backgroundImage: _photo != null && _photo!.isImage ? FileImage(File(_photo!.path)) : null,
+                    child: _photo == null
+                        ? Icon(Icons.person, size: 40, color: _role.foreground)
+                        : (_photo!.isImage ? null : Icon(Icons.insert_drive_file_rounded, size: 32, color: _role.foreground)),
                   ),
                   const SizedBox(height: 12),
-                  Text('Add a Photo', style: AppTextStyles.body(color: _role.accent, weight: FontWeight.w600)),
+                  Text(
+                    _photo?.fileName ?? 'Add a Photo',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body(color: _role.accent, weight: FontWeight.w600),
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 24),
-          LabeledDropdownField(
-            label: 'Upload your Address',
-            value: _address,
-            labelColor: _role.foreground,
-            onTap: _editAddress,
+          PillOutlineButton(
+            label: _document?.fileName ?? 'Upload your document',
+            textColor: AppColors.navy,
+            icon: Icons.upload_file_rounded,
+            onPressed: _pickDocument,
           ),
           const SizedBox(height: 22),
           LabeledDropdownField(
             label: 'Means of Identification',
-            value: _identification,
+            value: _identification ?? 'Select your means of identification',
             labelColor: _role.foreground,
             onTap: _pickIdentification,
           ),
+          if (_idNumberFormat case final format?) ...[
+            const SizedBox(height: 14),
+            PillTextField(
+              hint: format.hint,
+              controller: _idNumberController,
+              keyboardType: format.numeric ? TextInputType.number : TextInputType.text,
+              inputFormatters: [
+                if (format.numeric)
+                  FilteringTextInputFormatter.digitsOnly
+                else ...[
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                  TextInputFormatter.withFunction(
+                    (oldValue, newValue) => newValue.copyWith(text: newValue.text.toUpperCase()),
+                  ),
+                ],
+                LengthLimitingTextInputFormatter(format.maxLength),
+              ],
+            ),
+          ],
           const SizedBox(height: 32),
           PillButton(
             label: 'Continue',

@@ -44,7 +44,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const HomeServantLogo(role: UserRole.landlord, iconSize: 40, textSize: 16),
+                        const HomeServantLogo(role: UserRole.landlord, iconSize: 40),
                         Stack(
                           clipBehavior: Clip.none,
                           children: [

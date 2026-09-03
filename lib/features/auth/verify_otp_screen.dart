@@ -97,7 +97,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
               child: Text(
                 _secondsLeft == 0 ? 'Resend OTP' : 'Resend available after timer ends',
                 style: AppTextStyles.body(
-                  color: _secondsLeft == 0 ? role.accent : role.foreground.withValues(alpha: 0.4),
+                  color: _secondsLeft == 0 ? role.emphasis : role.foreground.withValues(alpha: 0.4),
                   weight: FontWeight.w600,
                   size: 13,
                 ),

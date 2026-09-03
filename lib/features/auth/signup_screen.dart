@@ -56,7 +56,6 @@ class SignupScreen extends StatelessWidget {
                       const HomeServantLogo(
                         role: UserRole.tenant,
                         iconSize: 64,
-                        textSize: 26,
                       ),
                       const Spacer(flex: 2),
                       Text(

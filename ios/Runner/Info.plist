@@ -69,5 +69,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>HomeServant needs access to your photo library so you can upload a profile photo or documents from your camera roll.</string>
 </dict>
 </plist>

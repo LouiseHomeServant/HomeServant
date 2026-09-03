@@ -37,7 +37,7 @@ class _SignupLandlordScreenState extends State<SignupLandlordScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            Center(child: HomeServantLogo(role: _role, iconSize: 60, textSize: 26)),
+            Center(child: HomeServantLogo(role: _role, iconSize: 60)),
             const SizedBox(height: 56),
             Text('Sign Up', textAlign: TextAlign.center, style: AppTextStyles.heading(color: _role.foreground, size: 30)),
             const SizedBox(height: 6),

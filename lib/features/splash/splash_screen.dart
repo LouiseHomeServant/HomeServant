@@ -40,9 +40,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final controller = VideoPlayerController.asset('assets/videos/splash_bg.mp4');
     try {
       await controller.initialize();
-      await controller.setLooping(true);
+      await controller.setLooping(false);
       await controller.setVolume(0);
       await controller.play();
+      controller.addListener(_holdLastFrame);
       if (!mounted) return;
       setState(() {
         _videoController = controller;
@@ -54,9 +55,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     }
   }
 
+  // Not looping still lets the platform player rewind to frame 0 on
+  // completion; explicitly pause at the end so the last frame holds.
+  void _holdLastFrame() {
+    final controller = _videoController;
+    if (controller == null) return;
+    final value = controller.value;
+    if (value.isInitialized && !value.isPlaying && value.position >= value.duration) {
+      controller.seekTo(value.duration);
+    }
+  }
+
   @override
   void dispose() {
     _kenBurnsController.dispose();
+    _videoController?.removeListener(_holdLastFrame);
     _videoController?.dispose();
     super.dispose();
   }

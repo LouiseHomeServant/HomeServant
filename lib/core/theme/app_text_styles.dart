@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// Quity (primary/display) paired with Givonic (secondary/accent), matching
-/// the wordmark and headings from the brand's font pairing.
+/// Givonic is the app's general-purpose text face; Quity is reserved for
+/// headings only.
 class AppTextStyles {
   AppTextStyles._();
 
-  static const String primaryFont = 'Quity';
-  static const String accentFont = 'Givonic';
+  static const String headingFont = 'Quity';
+  static const String bodyFont = 'Givonic';
 
   static TextStyle display({required Color color, double size = 34}) =>
       TextStyle(
-        fontFamily: primaryFont,
+        fontFamily: bodyFont,
         color: color,
         fontSize: size,
         fontWeight: FontWeight.w600,
@@ -19,7 +19,7 @@ class AppTextStyles {
 
   static TextStyle heading({required Color color, double size = 26}) =>
       TextStyle(
-        fontFamily: primaryFont,
+        fontFamily: headingFont,
         color: color,
         fontSize: size,
         fontWeight: FontWeight.w500,
@@ -30,7 +30,7 @@ class AppTextStyles {
     double size = 15,
     FontWeight weight = FontWeight.w400,
   }) => TextStyle(
-    fontFamily: primaryFont,
+    fontFamily: bodyFont,
     color: color,
     fontSize: size,
     fontWeight: weight,
@@ -38,7 +38,7 @@ class AppTextStyles {
 
   static TextStyle button({required Color color, double size = 16}) =>
       TextStyle(
-        fontFamily: accentFont,
+        fontFamily: bodyFont,
         color: color,
         fontSize: size,
         fontWeight: FontWeight.w700,

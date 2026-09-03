@@ -13,6 +13,9 @@ class AppColors {
   static const Color inputFieldGrey = Color(0xFF8C93A6);
   static const Color hintGrey = Color(0xFF7A7F8C);
 
+  /// Landlord auth screens' background (login/signup).
+  static const Color landlordBrown = Color(0xFF774C00);
+
   /// The three brand colours the "Theme" picker is allowed to recombine —
   /// navy, sand, and white. No other colours are introduced by any theme.
   static const Color sand = Color(0xFFF2CF8F);

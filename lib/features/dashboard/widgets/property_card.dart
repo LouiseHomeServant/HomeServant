@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../models/dashboard_theme.dart';
 import '../models/property.dart';
@@ -89,7 +88,7 @@ class _PropertyCardState extends State<PropertyCard> {
               ),
               Row(
                 children: [
-                  ..._stars(property.rating),
+                  ..._stars(property.rating, theme),
                   const SizedBox(width: 4),
                   Text(property.rating.toString(), style: AppTextStyles.body(color: theme.foreground, size: 13)),
                 ],
@@ -101,13 +100,17 @@ class _PropertyCardState extends State<PropertyCard> {
     );
   }
 
-  List<Widget> _stars(double rating) {
+  // Stars sit directly on `theme.background`, and the brand's gold reads
+  // poorly there on the Sand theme (gold-on-sand is nearly the same hue) —
+  // so the fill colour is theme.accent, which is always chosen to contrast
+  // with background, instead of a fixed gold.
+  List<Widget> _stars(double rating, DashboardTheme theme) {
     final fullStars = rating.floor();
     final hasHalf = rating - fullStars >= 0.5;
     return List.generate(2, (index) {
-      if (index < fullStars) return const Icon(Icons.star_rounded, color: AppColors.gold, size: 16);
-      if (index == fullStars && hasHalf) return const Icon(Icons.star_half_rounded, color: AppColors.gold, size: 16);
-      return Icon(Icons.star_rounded, color: AppColors.gold.withValues(alpha: 0.3), size: 16);
+      if (index < fullStars) return Icon(Icons.star_rounded, color: theme.accent, size: 16);
+      if (index == fullStars && hasHalf) return Icon(Icons.star_half_rounded, color: theme.accent, size: 16);
+      return Icon(Icons.star_rounded, color: theme.accent.withValues(alpha: 0.3), size: 16);
     });
   }
 }

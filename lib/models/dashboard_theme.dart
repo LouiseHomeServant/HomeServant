@@ -58,6 +58,30 @@ enum DashboardTheme {
     }
   }
 
+  /// Text/icon colour drawn on top of [surface]. Every theme's [surface] is
+  /// a light colour (white or sand), so — unlike [foreground], which flips
+  /// to white on Midnight to contrast with its navy background — this stays
+  /// navy across all three themes.
+  Color get onSurface => AppColors.navy;
+
+  /// Dashboard location-pin colour. [accent] alone would make Sand and
+  /// Classic both render plain navy (their shared accent) — indistinguishable
+  /// from one another. Both themes' backgrounds are light, so navy is the
+  /// only high-contrast option in the brand palette for either; rather than
+  /// reach for an off-brand hue (or a washed-out white-on-sand pairing) this
+  /// gives Sand a richer near-black navy so the two still read as distinct
+  /// without sacrificing legibility.
+  Color get locationPinColor {
+    switch (this) {
+      case DashboardTheme.midnight:
+        return AppColors.sand;
+      case DashboardTheme.sand:
+        return AppColors.navyDark;
+      case DashboardTheme.classic:
+        return AppColors.navy;
+    }
+  }
+
   /// Colour for text/icons drawn on top of [accent].
   Color get onAccent {
     switch (this) {

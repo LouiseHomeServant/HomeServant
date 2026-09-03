@@ -1,96 +1,103 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/user_role.dart';
 import '../../widgets/home_servant_logo.dart';
 import '../../widgets/pill_button.dart';
-import '../../widgets/pill_text_field.dart';
-import '../../widgets/terms_footer.dart';
-import '../../widgets/themed_scaffold.dart';
 
-class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key, required this.role, required this.onContinue});
+/// First step of the sign-up flow: asks which side of the marketplace the
+/// visitor is signing up as before handing off to the role-specific form.
+class SignupScreen extends StatelessWidget {
+  const SignupScreen({super.key, required this.onRoleSelected});
 
-  final UserRole role;
-  final ValueChanged<String> onContinue;
-
-  @override
-  State<SignupScreen> createState() => _SignupScreenState();
-}
-
-class _SignupScreenState extends State<SignupScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
-
-  @override
-  void dispose() {
-    _email.dispose();
-    super.dispose();
-  }
+  final ValueChanged<UserRole> onRoleSelected;
 
   @override
   Widget build(BuildContext context) {
-    final role = widget.role;
-    return ThemedScaffold(
-      role: role,
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 24),
-            Center(child: HomeServantLogo(role: role, iconSize: 60, textSize: 26)),
-            const SizedBox(height: 56),
-            Text('Sign Up', textAlign: TextAlign.center, style: AppTextStyles.heading(color: role.foreground, size: 30)),
-            const SizedBox(height: 6),
-            Text(
-              'Enter your email to signUp',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body(color: role.foreground.withValues(alpha: 0.85)),
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/images/homepage.jpg', fit: BoxFit.cover),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.navyDark.withValues(alpha: 0.3),
+                  AppColors.navy.withValues(alpha: 0.2),
+                  AppColors.navyDark.withValues(alpha: 0.35),
+                ],
+              ),
             ),
-            const SizedBox(height: 28),
-            PillTextField(
-              hint: 'email@domain.com',
-              controller: _email,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || !value.contains('@')) return 'Enter a valid email';
-                return null;
-              },
-            ),
-            const SizedBox(height: 18),
-            PillButton(
-              label: 'Continue',
-              backgroundColor: role.accent,
-              textColor: Colors.white,
-              onPressed: () {
-                if (_formKey.currentState?.validate() ?? false) {
-                  widget.onContinue(_email.text.trim());
-                }
-              },
-            ),
-            const SizedBox(height: 24),
-            Row(
+          ),
+          SafeArea(
+            child: Stack(
               children: [
-                Expanded(child: Divider(color: role.foreground.withValues(alpha: 0.4))),
+                if (Navigator.of(context).canPop())
+                  Positioned(
+                    top: 4,
+                    left: 8,
+                    child: IconButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: AppColors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    'Sign in with social media',
-                    style: AppTextStyles.body(color: role.foreground.withValues(alpha: 0.7), size: 13),
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 2),
+                      const HomeServantLogo(
+                        role: UserRole.tenant,
+                        iconSize: 64,
+                        textSize: 26,
+                      ),
+                      const Spacer(flex: 2),
+                      Text(
+                        'Create an Account',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.heading(
+                          color: AppColors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Tell us which side of Home Servant you\'re on.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.body(
+                          color: AppColors.white,
+                          size: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      PillButton(
+                        label: 'Sign up as a Tenant',
+                        backgroundColor: AppColors.navy,
+                        textColor: AppColors.white,
+                        onPressed: () => onRoleSelected(UserRole.tenant),
+                      ),
+                      const SizedBox(height: 14),
+                      PillButton(
+                        label: 'Sign up as a Landlord',
+                        backgroundColor: AppColors.gold,
+                        textColor: AppColors.navy,
+                        onPressed: () => onRoleSelected(UserRole.landlord),
+                      ),
+                      const Spacer(flex: 4),
+                    ],
                   ),
                 ),
-                Expanded(child: Divider(color: role.foreground.withValues(alpha: 0.4))),
               ],
             ),
-            const SizedBox(height: 24),
-            GoogleSignInButton(onPressed: () => widget.onContinue(_email.text.trim())),
-            const SizedBox(height: 140),
-            TermsFooter(
-              mutedColor: role.foreground.withValues(alpha: 0.55),
-              linkColor: role.foreground,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

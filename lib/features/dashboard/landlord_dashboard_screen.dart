@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../models/dashboard_theme.dart';
 import '../../models/user_role.dart';
+import '../../state/app_state.dart';
 import '../../widgets/home_servant_logo.dart';
 import 'models/property.dart';
+import 'profile_screen.dart';
 import 'widgets/bottom_nav.dart';
 
 /// No landlord-facing dashboard frame was included in the Figma export, so
@@ -23,11 +26,16 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.watch<AppState>().dashboardTheme;
+    final onProfileTab = _navIndex == 3;
     return Scaffold(
-      backgroundColor: AppColors.offWhite,
+      backgroundColor: theme.background,
       body: SafeArea(
         child: Stack(
           children: [
+            if (onProfileTab)
+              ProfileScreen(onLogOut: () => context.go('/get-started'))
+            else
             CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
@@ -40,7 +48,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
                         Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            const Icon(Icons.notifications_none_rounded, color: AppColors.navy),
+                            Icon(Icons.notifications_none_rounded, color: theme.foreground),
                             Positioned(
                               top: -2,
                               right: -2,
@@ -63,7 +71,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text('My Properties', style: AppTextStyles.heading(color: AppColors.navy, size: 22)),
+                        Text('My Properties', style: AppTextStyles.heading(color: theme.foreground, size: 22)),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(color: AppColors.navy, borderRadius: BorderRadius.circular(20)),
@@ -96,7 +104,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
               child: DashboardBottomNav(
                 currentIndex: _navIndex,
                 onTap: (i) => setState(() => _navIndex = i),
-                theme: DashboardTheme.midnight,
+                theme: theme,
               ),
             ),
           ],

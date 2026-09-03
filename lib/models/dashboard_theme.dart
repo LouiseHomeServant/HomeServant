@@ -70,6 +70,33 @@ enum DashboardTheme {
     }
   }
 
+  /// Background of the floating bottom navigator. Deliberately distinct from
+  /// [background] so the bar reads as its own surface against every themed
+  /// page: blue on Classic White, sand on Midnight, white on Sand.
+  Color get navigatorColor {
+    switch (this) {
+      case DashboardTheme.midnight:
+        return AppColors.sand;
+      case DashboardTheme.sand:
+        return AppColors.white;
+      case DashboardTheme.classic:
+        return AppColors.navy;
+    }
+  }
+
+  /// Unselected icon colour on the navigator, contrasting with
+  /// [navigatorColor].
+  Color get navigatorForeground {
+    switch (this) {
+      case DashboardTheme.midnight:
+        return AppColors.navy;
+      case DashboardTheme.sand:
+        return AppColors.navy;
+      case DashboardTheme.classic:
+        return AppColors.white;
+    }
+  }
+
   String get label {
     switch (this) {
       case DashboardTheme.midnight:

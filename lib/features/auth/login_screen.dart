@@ -1,82 +1,101 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/user_role.dart';
 import '../../widgets/home_servant_logo.dart';
 import '../../widgets/pill_button.dart';
-import '../../widgets/pill_text_field.dart';
-import '../../widgets/terms_footer.dart';
-import '../../widgets/themed_scaffold.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({
-    super.key,
-    required this.role,
-    required this.onLogin,
-    required this.onSignUp,
-  });
+/// First step of the login flow: asks which side of the marketplace the
+/// visitor is logging in as before handing off to the role-specific form.
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key, required this.onRoleSelected});
 
-  final UserRole role;
-  final VoidCallback onLogin;
-  final VoidCallback onSignUp;
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _username = TextEditingController();
-  final _password = TextEditingController();
-
-  @override
-  void dispose() {
-    _username.dispose();
-    _password.dispose();
-    super.dispose();
-  }
+  final ValueChanged<UserRole> onRoleSelected;
 
   @override
   Widget build(BuildContext context) {
-    final role = widget.role;
-    return ThemedScaffold(
-      role: role,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          const SizedBox(height: 24),
-          Center(child: HomeServantLogo(role: role, iconSize: 60, textSize: 26)),
-          const SizedBox(height: 64),
-          PillTextField(hint: 'Username', controller: _username),
-          const SizedBox(height: 16),
-          PillTextField(hint: 'Password', controller: _password, obscureText: true),
-          const SizedBox(height: 24),
-          PillButton(
-            label: 'Login',
-            backgroundColor: role.accent,
-            textColor: Colors.white,
-            onPressed: widget.onLogin,
-          ),
-          const SizedBox(height: 18),
-          Center(
-            child: GestureDetector(
-              onTap: widget.onSignUp,
-              child: RichText(
-                text: TextSpan(
-                  style: AppTextStyles.body(color: role.foreground),
-                  children: [
-                    const TextSpan(text: "Don't have an account? "),
-                    TextSpan(
-                      text: 'Sign Up',
-                      style: AppTextStyles.body(color: role.accent, weight: FontWeight.w700),
-                    ),
-                  ],
-                ),
+          Image.asset('assets/images/homepage.jpg', fit: BoxFit.cover),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.navyDark.withValues(alpha: 0.3),
+                  AppColors.navy.withValues(alpha: 0.2),
+                  AppColors.navyDark.withValues(alpha: 0.35),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 140),
-          TermsFooter(
-            mutedColor: role.foreground.withValues(alpha: 0.55),
-            linkColor: role.foreground,
+          SafeArea(
+            child: Stack(
+              children: [
+                if (Navigator.of(context).canPop())
+                  Positioned(
+                    top: 4,
+                    left: 8,
+                    child: IconButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: AppColors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 2),
+                      const HomeServantLogo(
+                        role: UserRole.tenant,
+                        iconSize: 64,
+                        textSize: 26,
+                      ),
+                      const Spacer(flex: 2),
+                      Text(
+                        'Welcome Back',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.heading(
+                          color: AppColors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Tell us which side of Home Servant you\'re on.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.body(
+                          color: AppColors.white,
+                          size: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      PillButton(
+                        label: 'Login as a Tenant',
+                        backgroundColor: AppColors.navy,
+                        textColor: AppColors.white,
+                        onPressed: () => onRoleSelected(UserRole.tenant),
+                      ),
+                      const SizedBox(height: 14),
+                      PillButton(
+                        label: 'Login as a Landlord',
+                        backgroundColor: AppColors.gold,
+                        textColor: AppColors.navy,
+                        onPressed: () => onRoleSelected(UserRole.landlord),
+                      ),
+                      const Spacer(flex: 4),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

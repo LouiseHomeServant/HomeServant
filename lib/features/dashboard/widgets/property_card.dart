@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../models/dashboard_theme.dart';
 import '../models/property.dart';
 
 class PropertyCard extends StatefulWidget {
-  const PropertyCard({super.key, required this.property});
+  const PropertyCard({super.key, required this.property, required this.theme});
 
   final Property property;
+  final DashboardTheme theme;
 
   @override
   State<PropertyCard> createState() => _PropertyCardState();
@@ -18,6 +20,7 @@ class _PropertyCardState extends State<PropertyCard> {
   @override
   Widget build(BuildContext context) {
     final property = widget.property;
+    final theme = widget.theme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 22),
       child: Column(
@@ -78,9 +81,9 @@ class _PropertyCardState extends State<PropertyCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(property.title, style: AppTextStyles.body(color: AppColors.navy, size: 15, weight: FontWeight.w700)),
+                    Text(property.title, style: AppTextStyles.body(color: theme.foreground, size: 15, weight: FontWeight.w700)),
                     const SizedBox(height: 2),
-                    Text(property.location, style: AppTextStyles.body(color: AppColors.goldDark, size: 13, weight: FontWeight.w600)),
+                    Text(property.location, style: AppTextStyles.body(color: theme.accent, size: 13, weight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -88,7 +91,7 @@ class _PropertyCardState extends State<PropertyCard> {
                 children: [
                   ..._stars(property.rating),
                   const SizedBox(width: 4),
-                  Text(property.rating.toString(), style: AppTextStyles.body(color: AppColors.navy, size: 13)),
+                  Text(property.rating.toString(), style: AppTextStyles.body(color: theme.foreground, size: 13)),
                 ],
               ),
             ],

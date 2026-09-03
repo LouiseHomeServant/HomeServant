@@ -9,18 +9,18 @@ import '../../widgets/pill_button.dart';
 import '../../widgets/pill_text_field.dart';
 import '../../widgets/themed_scaffold.dart';
 
-class OnboardingStep2Screen extends StatefulWidget {
-  const OnboardingStep2Screen({super.key, required this.role, required this.onFinish});
+class SignupTenant2Screen extends StatefulWidget {
+  const SignupTenant2Screen({super.key, required this.onFinish});
 
-  final UserRole role;
   final VoidCallback onFinish;
 
   @override
-  State<OnboardingStep2Screen> createState() => _OnboardingStep2ScreenState();
+  State<SignupTenant2Screen> createState() => _SignupTenant2ScreenState();
 }
 
-class _OnboardingStep2ScreenState extends State<OnboardingStep2Screen> {
+class _SignupTenant2ScreenState extends State<SignupTenant2Screen> {
   static const _idOptions = ['NIN', "Driver's License", "Voter's Card", 'International Passport'];
+  static const _role = UserRole.tenant;
 
   String _address = '15 Seyi Coker Street, AGEGE';
   String _identification = 'NIN';
@@ -93,15 +93,14 @@ class _OnboardingStep2ScreenState extends State<OnboardingStep2Screen> {
 
   @override
   Widget build(BuildContext context) {
-    final role = widget.role;
-    final panelColor = role.isLandlord ? AppColors.offWhite : const Color(0xFF1B3255);
+    const panelColor = Color(0xFF1B3255);
     return ThemedScaffold(
-      role: role,
+      role: _role,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 12),
-          Center(child: HomeServantLogo(role: role, iconSize: 56, textSize: 24)),
+          Center(child: HomeServantLogo(role: _role, iconSize: 56, textSize: 24)),
           const SizedBox(height: 36),
           GestureDetector(
             onTap: _pickPhoto,
@@ -113,12 +112,12 @@ class _OnboardingStep2ScreenState extends State<OnboardingStep2Screen> {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: role.accent.withValues(alpha: 0.3),
+                    backgroundColor: _role.accent.withValues(alpha: 0.3),
                     backgroundImage: _photo != null ? FileImage(_photo!) : null,
-                    child: _photo == null ? Icon(Icons.person, size: 40, color: role.foreground) : null,
+                    child: _photo == null ? Icon(Icons.person, size: 40, color: _role.foreground) : null,
                   ),
                   const SizedBox(height: 12),
-                  Text('Add a Photo', style: AppTextStyles.body(color: role.accent, weight: FontWeight.w600)),
+                  Text('Add a Photo', style: AppTextStyles.body(color: _role.accent, weight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -127,20 +126,20 @@ class _OnboardingStep2ScreenState extends State<OnboardingStep2Screen> {
           LabeledDropdownField(
             label: 'Upload your Address',
             value: _address,
-            labelColor: role.isLandlord ? role.foreground : role.accent,
+            labelColor: _role.foreground,
             onTap: _editAddress,
           ),
           const SizedBox(height: 22),
           LabeledDropdownField(
             label: 'Means of Identification',
             value: _identification,
-            labelColor: role.isLandlord ? role.foreground : role.accent,
+            labelColor: _role.foreground,
             onTap: _pickIdentification,
           ),
           const SizedBox(height: 32),
           PillButton(
             label: 'Continue',
-            backgroundColor: role.accent,
+            backgroundColor: _role.accent,
             textColor: Colors.white,
             onPressed: widget.onFinish,
           ),

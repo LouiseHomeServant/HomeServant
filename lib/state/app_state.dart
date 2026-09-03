@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/dashboard_theme.dart';
 import '../models/user_role.dart';
+import '../services/app_icon_service.dart';
 
 /// Holds the small amount of state that needs to travel across the
 /// multi-step onboarding flow (role, email being verified, collected
@@ -11,12 +12,13 @@ class AppState extends ChangeNotifier {
   String fullName = '';
   String phoneNumber = '';
   String houseAddress = '';
+  String referralCode = '';
   String password = '';
   String firstName = '';
   String lastName = '';
   DateTime? dateOfBirth;
   String? profilePhotoPath;
-  DashboardTheme dashboardTheme = DashboardTheme.midnight;
+  DashboardTheme dashboardTheme = DashboardTheme.classic;
 
   void selectRole(UserRole newRole) {
     role = newRole;
@@ -26,6 +28,7 @@ class AppState extends ChangeNotifier {
   void setDashboardTheme(DashboardTheme theme) {
     dashboardTheme = theme;
     notifyListeners();
+    AppIconService.apply(theme);
   }
 
   void setEmail(String value) {
@@ -33,9 +36,16 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setProfileBasics({required String name, required String phone}) {
+  void setProfileBasics({
+    required String name,
+    required String phone,
+    String? houseAddress,
+    String? referralCode,
+  }) {
     fullName = name;
     phoneNumber = phone;
+    if (houseAddress != null) this.houseAddress = houseAddress;
+    if (referralCode != null) this.referralCode = referralCode;
     notifyListeners();
   }
 

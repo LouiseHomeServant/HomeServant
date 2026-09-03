@@ -6,9 +6,10 @@ import '../../widgets/home_servant_logo.dart';
 import '../../widgets/pill_button.dart';
 
 class GetStartedScreen extends StatelessWidget {
-  const GetStartedScreen({super.key, required this.onRoleSelected});
+  const GetStartedScreen({super.key, required this.onLogin, required this.onSignUp});
 
-  final ValueChanged<UserRole> onRoleSelected;
+  final VoidCallback onLogin;
+  final VoidCallback onSignUp;
 
   @override
   Widget build(BuildContext context) {
@@ -76,17 +77,17 @@ class GetStartedScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 28),
                       PillButton(
-                        label: 'Looking for a Home?',
+                        label: 'Login',
                         backgroundColor: AppColors.navy,
                         textColor: AppColors.white,
-                        onPressed: () => onRoleSelected(UserRole.tenant),
+                        onPressed: onLogin,
                       ),
                       const SizedBox(height: 14),
                       PillButton(
-                        label: 'Register as a Landlord',
+                        label: 'Sign Up',
                         backgroundColor: AppColors.gold,
                         textColor: AppColors.navy,
-                        onPressed: () => onRoleSelected(UserRole.landlord),
+                        onPressed: onSignUp,
                       ),
                       const Spacer(flex: 4),
                     ],

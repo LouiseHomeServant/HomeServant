@@ -27,7 +27,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
     final theme = context.watch<AppState>().dashboardTheme;
     final onProfileTab = _navIndex == 3;
     return Scaffold(
-      backgroundColor: onProfileTab ? theme.background : Colors.white,
+      backgroundColor: theme.background,
       body: SafeArea(
         child: Stack(
           children: [
@@ -74,7 +74,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                         Text(
                           'Ikeja, Lagos',
                           style: AppTextStyles.body(
-                            color: AppColors.navy,
+                            color: theme.foreground,
                             weight: FontWeight.w700,
                           ),
                         ),
@@ -82,17 +82,17 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                     ),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.mail_outline_rounded,
-                          color: AppColors.navy,
+                          color: theme.foreground,
                         ),
                         const SizedBox(width: 16),
                         Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.notifications_none_rounded,
-                              color: AppColors.navy,
+                              color: theme.foreground,
                             ),
                             Positioned(
                               top: -2,
@@ -181,7 +181,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                 const SizedBox(height: 22),
                 Text(
                   'Categories',
-                  style: AppTextStyles.heading(color: AppColors.navy, size: 20),
+                  style: AppTextStyles.heading(color: theme.foreground, size: 20),
                 ),
                 const SizedBox(height: 14),
               ],
@@ -236,7 +236,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
             itemCount: mockProperties.length,
             itemBuilder:
                 (context, index) =>
-                    PropertyCard(property: mockProperties[index]),
+                    PropertyCard(property: mockProperties[index], theme: theme),
           ),
         ),
       ],

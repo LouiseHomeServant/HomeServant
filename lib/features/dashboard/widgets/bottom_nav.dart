@@ -25,7 +25,7 @@ class DashboardBottomNav extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: BoxDecoration(
-        color: theme.background,
+        color: theme.navigatorColor,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 8)),
@@ -41,10 +41,10 @@ class DashboardBottomNav extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: selected ? theme.accent : Colors.transparent,
+                color: selected ? theme.background : Colors.transparent,
                 shape: BoxShape.circle,
               ),
-              child: Icon(_icons[index], color: selected ? theme.onAccent : theme.foreground, size: 22),
+              child: Icon(_icons[index], color: selected ? theme.accent : theme.navigatorForeground, size: 22),
             ),
           );
         }),

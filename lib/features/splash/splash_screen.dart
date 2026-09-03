@@ -1,13 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:video_player/video_player.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/pill_button.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key, required this.onExplore});
 
   final VoidCallback onExplore;
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _kenBurnsController;
+  late final Animation<double> _scale;
+  late final Animation<Alignment> _pan;
+
+  VideoPlayerController? _videoController;
+  bool _videoReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Ken Burns drift on the still photo, shown until (or unless) the
+    // generated motion background finishes loading.
+    _kenBurnsController = AnimationController(vsync: this, duration: const Duration(seconds: 5))
+      ..repeat(reverse: true);
+    final curve = CurvedAnimation(parent: _kenBurnsController, curve: Curves.easeInOut);
+    _scale = Tween<double>(begin: 1.0, end: 1.12).animate(curve);
+    _pan = AlignmentTween(begin: const Alignment(-0.15, -0.08), end: const Alignment(0.15, 0.1)).animate(curve);
+
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    final controller = VideoPlayerController.asset('assets/videos/splash_bg.mp4');
+    try {
+      await controller.initialize();
+      await controller.setLooping(true);
+      await controller.setVolume(0);
+      await controller.play();
+      if (!mounted) return;
+      setState(() {
+        _videoController = controller;
+        _videoReady = true;
+      });
+    } catch (_) {
+      // Bundled video failed to load — the Ken Burns photo stays as the background.
+      controller.dispose();
+    }
+  }
+
+  @override
+  void dispose() {
+    _kenBurnsController.dispose();
+    _videoController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +67,31 @@ class SplashScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/images/homepage.jpg', fit: BoxFit.cover),
+          AnimatedBuilder(
+            animation: _kenBurnsController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scale.value,
+                alignment: _pan.value,
+                child: child,
+              );
+            },
+            child: Image.asset('assets/images/homepage.jpg', fit: BoxFit.cover),
+          ),
+          AnimatedOpacity(
+            opacity: _videoReady ? 1 : 0,
+            duration: const Duration(milliseconds: 600),
+            child: _videoController != null && _videoController!.value.isInitialized
+                ? FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoController!.value.size.width,
+                      height: _videoController!.value.size.height,
+                      child: VideoPlayer(_videoController!),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -48,7 +124,7 @@ class SplashScreen extends StatelessWidget {
                     label: 'EXPLORE',
                     backgroundColor: AppColors.navy,
                     textColor: AppColors.white,
-                    onPressed: onExplore,
+                    onPressed: widget.onExplore,
                   ),
                   const SizedBox(height: 24),
                 ],

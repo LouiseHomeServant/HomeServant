@@ -31,9 +31,11 @@ class HomeServantLogo extends StatelessWidget {
       return Image.asset('assets/icons/logo6.png', height: iconSize, fit: BoxFit.contain);
     }
 
+    // logo.svg's natural viewBox is 332x263 (not square); sizing by height
+    // only lets it scale to its own aspect ratio instead of being
+    // letterboxed inside a forced square box.
     final icon = SvgPicture.asset(
       'assets/icons/logo.svg',
-      width: iconSize,
       height: iconSize,
       colorFilter: const ColorFilter.mode(AppColors.navy, BlendMode.srcIn),
     );

@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:video_player/video_player.dart';
+import '../../core/responsive.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/pill_button.dart';
@@ -37,6 +39,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _initVideo() async {
+    // Web keeps the static Ken Burns photo instead of the motion background —
+    // simpler first paint and avoids browser autoplay/codec quirks.
+    if (kIsWeb) return;
     final controller = VideoPlayerController.asset('assets/videos/splash_bg.mp4');
     try {
       await controller.initialize();
@@ -121,26 +126,28 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(flex: 3),
-                  SvgPicture.asset('assets/icons/logo4.svg', width: 170),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Find Your Perfect House\nJust one Click Away',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.body(color: AppColors.white, size: 15),
-                  ),
-                  const Spacer(flex: 4),
-                  PillButton(
-                    label: 'EXPLORE',
-                    backgroundColor: AppColors.navy,
-                    textColor: AppColors.white,
-                    onPressed: widget.onExplore,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+              child: ResponsiveCenter(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Spacer(flex: 3),
+                    SvgPicture.asset('assets/icons/logo4.svg', width: 170),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Find Your Perfect House\nJust one Click Away',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.body(color: AppColors.white, size: 15),
+                    ),
+                    const Spacer(flex: 4),
+                    PillButton(
+                      label: 'EXPLORE',
+                      backgroundColor: AppColors.navy,
+                      textColor: AppColors.white,
+                      onPressed: widget.onExplore,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),

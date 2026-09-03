@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
@@ -108,7 +107,7 @@ class _SignupTenant2ScreenState extends State<SignupTenant2Screen> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: _role.accent.withValues(alpha: 0.3),
-                    backgroundImage: _photo != null && _photo!.isImage ? FileImage(File(_photo!.path)) : null,
+                    backgroundImage: _photo != null && _photo!.isImage ? _photo!.imageProvider : null,
                     child: _photo == null
                         ? Icon(Icons.person, size: 40, color: _role.foreground)
                         : (_photo!.isImage ? null : Icon(Icons.insert_drive_file_rounded, size: 32, color: _role.foreground)),

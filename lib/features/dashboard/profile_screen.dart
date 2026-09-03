@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
 import '../../widgets/theme_picker_sheet.dart';
+import '../../widgets/upload_picker.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -37,7 +37,7 @@ class ProfileScreen extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: theme.foreground, width: 1.4),
             image: photoPath != null
-                ? DecorationImage(image: FileImage(File(photoPath)), fit: BoxFit.cover)
+                ? DecorationImage(image: imageProviderForPath(photoPath), fit: BoxFit.cover)
                 : null,
           ),
           child: photoPath == null ? Icon(Icons.person_outline, color: theme.foreground, size: 40) : null,

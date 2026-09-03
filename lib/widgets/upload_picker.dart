@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/theme/app_colors.dart';
@@ -6,13 +10,30 @@ import '../core/theme/app_text_styles.dart';
 
 const _imageExtensions = {'jpg', 'jpeg', 'png', 'heic', 'heif', 'webp', 'gif', 'bmp'};
 
+/// An [ImageProvider] for a locally-picked file path — a real file path on
+/// mobile/desktop, or a blob URL on web (what `image_picker` returns there).
+/// `dart:io.File` can't be constructed on web at all, so it must stay behind
+/// the [kIsWeb] check rather than being called unconditionally.
+ImageProvider imageProviderForPath(String path) => kIsWeb ? NetworkImage(path) : FileImage(File(path));
+
 /// Result of a successful upload pick, regardless of source.
 class PickedUpload {
-  const PickedUpload({required this.path, required this.fileName, required this.isImage});
+  const PickedUpload({required this.path, required this.fileName, required this.isImage, this.bytes});
 
   final String path;
   final String fileName;
   final bool isImage;
+
+  /// Populated when the platform can't expose a readable file path — web's
+  /// "Choose from Files" picker never returns a [path], only bytes.
+  final Uint8List? bytes;
+
+  /// An [ImageProvider] for this upload, preferring [bytes] (needed on web
+  /// for files picked via "Choose from Files") and falling back to [path].
+  ImageProvider get imageProvider {
+    final data = bytes;
+    return data != null ? MemoryImage(data) : imageProviderForPath(path);
+  }
 }
 
 /// Lets the user upload any document — a photo from their camera roll, or
@@ -49,11 +70,16 @@ Future<PickedUpload?> pickUpload(BuildContext context) async {
       if (picked == null) return null;
       return PickedUpload(path: picked.path, fileName: picked.name, isImage: true);
     case _UploadSource.files:
-      final result = await FilePicker.pickFiles();
+      final result = await FilePicker.pickFiles(withData: true);
       final file = result?.files.single;
-      if (file?.path == null) return null;
-      final extension = (file!.extension ?? '').toLowerCase();
-      return PickedUpload(path: file.path!, fileName: file.name, isImage: _imageExtensions.contains(extension));
+      if (file == null) return null;
+      final extension = (file.extension ?? '').toLowerCase();
+      return PickedUpload(
+        path: file.path ?? file.name,
+        fileName: file.name,
+        isImage: _imageExtensions.contains(extension),
+        bytes: file.bytes,
+      );
     case null:
       return null;
   }

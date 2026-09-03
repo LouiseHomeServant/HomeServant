@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/responsive.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/user_role.dart';
@@ -50,44 +51,46 @@ class LoginScreen extends StatelessWidget {
                   ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
-                      SvgPicture.asset('assets/icons/logo4.svg', width: 110),
-                      const Spacer(flex: 2),
-                      Text(
-                        'Welcome Back',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.heading(
-                          color: AppColors.white,
-                          size: 28,
+                  child: ResponsiveCenter(
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 2),
+                        SvgPicture.asset('assets/icons/logo4.svg', width: 110),
+                        const Spacer(flex: 2),
+                        Text(
+                          'Welcome Back',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.heading(
+                            color: AppColors.white,
+                            size: 28,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Tell us which side of Home Servant you\'re on.',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.body(
-                          color: AppColors.white,
-                          size: 16,
+                        const SizedBox(height: 10),
+                        Text(
+                          'Tell us which side of Home Servant you\'re on.',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.body(
+                            color: AppColors.white,
+                            size: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 28),
-                      PillButton(
-                        label: 'Login as a Tenant',
-                        backgroundColor: AppColors.navy,
-                        textColor: AppColors.white,
-                        onPressed: () => onRoleSelected(UserRole.tenant),
-                      ),
-                      const SizedBox(height: 14),
-                      PillButton(
-                        label: 'Login as a Landlord',
-                        backgroundColor: AppColors.gold,
-                        textColor: AppColors.navy,
-                        onPressed: () => onRoleSelected(UserRole.landlord),
-                      ),
-                      const Spacer(flex: 4),
-                    ],
+                        const SizedBox(height: 28),
+                        PillButton(
+                          label: 'Login as a Tenant',
+                          backgroundColor: AppColors.navy,
+                          textColor: AppColors.white,
+                          onPressed: () => onRoleSelected(UserRole.tenant),
+                        ),
+                        const SizedBox(height: 14),
+                        PillButton(
+                          label: 'Login as a Landlord',
+                          backgroundColor: AppColors.gold,
+                          textColor: AppColors.navy,
+                          onPressed: () => onRoleSelected(UserRole.landlord),
+                        ),
+                        const Spacer(flex: 4),
+                      ],
+                    ),
                   ),
                 ),
               ],

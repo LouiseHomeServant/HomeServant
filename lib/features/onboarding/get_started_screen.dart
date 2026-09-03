@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/responsive.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/pill_button.dart';
@@ -48,44 +49,46 @@ class GetStartedScreen extends StatelessWidget {
                   ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
-                      SvgPicture.asset('assets/icons/logo4.svg', width: 110),
-                      const Spacer(flex: 2),
-                      Text(
-                        'Get Started with\nHome Servant',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.heading(
-                          color: AppColors.white,
-                          size: 28,
+                  child: ResponsiveCenter(
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 2),
+                        SvgPicture.asset('assets/icons/logo4.svg', width: 110),
+                        const Spacer(flex: 2),
+                        Text(
+                          'Get Started with\nHome Servant',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.heading(
+                            color: AppColors.white,
+                            size: 28,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Find your dream home or manage your properties with ease.',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.body(
-                          color: AppColors.white,
-                          size: 16,
+                        const SizedBox(height: 10),
+                        Text(
+                          'Find your dream home or manage your properties with ease.',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.body(
+                            color: AppColors.white,
+                            size: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 28),
-                      PillButton(
-                        label: 'Login',
-                        backgroundColor: AppColors.navy,
-                        textColor: AppColors.white,
-                        onPressed: onLogin,
-                      ),
-                      const SizedBox(height: 14),
-                      PillButton(
-                        label: 'Sign Up',
-                        backgroundColor: AppColors.gold,
-                        textColor: AppColors.navy,
-                        onPressed: onSignUp,
-                      ),
-                      const Spacer(flex: 4),
-                    ],
+                        const SizedBox(height: 28),
+                        PillButton(
+                          label: 'Login',
+                          backgroundColor: AppColors.navy,
+                          textColor: AppColors.white,
+                          onPressed: onLogin,
+                        ),
+                        const SizedBox(height: 14),
+                        PillButton(
+                          label: 'Sign Up',
+                          backgroundColor: AppColors.gold,
+                          textColor: AppColors.navy,
+                          onPressed: onSignUp,
+                        ),
+                        const Spacer(flex: 4),
+                      ],
+                    ),
                   ),
                 ),
               ],

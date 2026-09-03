@@ -1,20 +1,32 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../../core/responsive.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
 import '../../widgets/pill_button.dart';
 import '../../widgets/pill_text_field.dart';
+import '../../widgets/upload_picker.dart';
 
 const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
-String _formatDate(DateTime date) => '${date.day} ${_months[date.month - 1]} ${date.year}';
+String _formatDate(DateTime date) =>
+    '${date.day} ${_months[date.month - 1]} ${date.year}';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -57,7 +69,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     final appState = context.read<AppState>();
     _firstName = TextEditingController(
-      text: appState.firstName.isNotEmpty ? appState.firstName : _dummyFirstName,
+      text:
+          appState.firstName.isNotEmpty ? appState.firstName : _dummyFirstName,
     );
     _lastName = TextEditingController(
       text: appState.lastName.isNotEmpty ? appState.lastName : _dummyLastName,
@@ -65,10 +78,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _dateOfBirth = appState.dateOfBirth ?? _dummyDob;
     _dob = TextEditingController(text: _formatDate(_dateOfBirth));
     _address = TextEditingController(
-      text: appState.houseAddress.isNotEmpty ? appState.houseAddress : _dummyAddress,
+      text:
+          appState.houseAddress.isNotEmpty
+              ? appState.houseAddress
+              : _dummyAddress,
     );
     _phone = TextEditingController(
-      text: appState.phoneNumber.isNotEmpty ? appState.phoneNumber : _dummyPhone,
+      text:
+          appState.phoneNumber.isNotEmpty ? appState.phoneNumber : _dummyPhone,
     );
     _email = TextEditingController(
       text: appState.email.isNotEmpty ? appState.email : _dummyEmail,
@@ -92,7 +109,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (picked != null) {
       setState(() => _photoPath = picked.path);
     }
@@ -127,7 +147,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       lastName: _lastName.text.trim(),
       dateOfBirth: _dateOfBirth,
     );
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Profile updated')));
     Navigator.of(context).pop();
   }
 
@@ -141,132 +163,183 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         backgroundColor: theme.background,
         elevation: 0,
         iconTheme: IconThemeData(color: theme.foreground),
-        title: Text('Edit Profile', style: AppTextStyles.heading(color: theme.foreground, size: 18)),
+        title: Text(
+          'Edit Profile',
+          style: AppTextStyles.heading(color: theme.foreground, size: 18),
+        ),
       ),
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-            children: [
-              Center(
-                child: GestureDetector(
-                  onTap: _pickPhoto,
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 48,
-                        backgroundColor: theme.accent.withValues(alpha: 0.25),
-                        backgroundImage: _photoPath != null ? FileImage(File(_photoPath!)) : null,
-                        child: _photoPath == null
-                            ? Icon(Icons.person, size: 48, color: theme.foreground)
-                            : null,
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: theme.accent,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: theme.background, width: 2),
-                          ),
-                          child: Icon(Icons.camera_alt_rounded, size: 16, color: theme.onAccent),
+        child: ResponsiveCenter(
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+              children: [
+                Center(
+                  child: GestureDetector(
+                    onTap: _pickPhoto,
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 48,
+                          backgroundColor: theme.accent.withValues(alpha: 0.25),
+                          backgroundImage:
+                              _photoPath != null
+                                  ? imageProviderForPath(_photoPath!)
+                                  : null,
+                          child:
+                              _photoPath == null
+                                  ? Icon(
+                                    Icons.person,
+                                    size: 48,
+                                    color: theme.foreground,
+                                  )
+                                  : null,
                         ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: theme.accent,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: theme.background,
+                                width: 2,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 16,
+                              color: theme.onAccent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton(
+                    onPressed: _pickPhoto,
+                    child: Text(
+                      'Change Photo',
+                      style: AppTextStyles.body(
+                        color: theme.accent,
+                        weight: FontWeight.w700,
+                        size: 13,
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: TextButton(
-                  onPressed: _pickPhoto,
-                  child: Text('Change Photo', style: AppTextStyles.body(color: theme.accent, weight: FontWeight.w700, size: 13)),
+                const SizedBox(height: 28),
+                _EditableField(
+                  label: 'First Name',
+                  theme: theme,
+                  controller: _firstName,
+                  editable: _firstNameEditable,
+                  onToggleEdit:
+                      () => setState(
+                        () => _firstNameEditable = !_firstNameEditable,
+                      ),
                 ),
-              ),
-              const SizedBox(height: 28),
-              _EditableField(
-                label: 'First Name',
-                theme: theme,
-                controller: _firstName,
-                editable: _firstNameEditable,
-                onToggleEdit: () => setState(() => _firstNameEditable = !_firstNameEditable),
-              ),
-              const SizedBox(height: 18),
-              _EditableField(
-                label: 'Last Name',
-                theme: theme,
-                controller: _lastName,
-                editable: _lastNameEditable,
-                onToggleEdit: () => setState(() => _lastNameEditable = !_lastNameEditable),
-              ),
-              const SizedBox(height: 18),
-              _EditableField(
-                label: 'Date of Birth',
-                theme: theme,
-                controller: _dob,
-                editable: _dobEditable,
-                forceReadOnly: true,
-                onFieldTap: _dobEditable ? _pickDate : null,
-                extraTrailing: Icon(Icons.calendar_today_outlined, color: AppColors.navy, size: 18),
-                onToggleEdit: () => setState(() => _dobEditable = !_dobEditable),
-              ),
-              const SizedBox(height: 18),
-              _EditableField(
-                label: 'House Address',
-                theme: theme,
-                controller: _address,
-                editable: _addressEditable,
-                onToggleEdit: () => setState(() => _addressEditable = !_addressEditable),
-              ),
-              const SizedBox(height: 18),
-              _EditableField(
-                label: 'Phone Number',
-                theme: theme,
-                controller: _phone,
-                editable: _phoneEditable,
-                keyboardType: TextInputType.phone,
-                onToggleEdit: () => setState(() => _phoneEditable = !_phoneEditable),
-              ),
-              const SizedBox(height: 18),
-              _EditableField(
-                label: 'Email',
-                theme: theme,
-                controller: _email,
-                editable: _emailEditable,
-                keyboardType: TextInputType.emailAddress,
-                onToggleEdit: () => setState(() => _emailEditable = !_emailEditable),
-                validator: (value) {
-                  if (value == null || !value.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 18),
-              _EditableField(
-                label: 'Password',
-                theme: theme,
-                controller: _password,
-                editable: _passwordEditable,
-                obscureText: _obscurePassword,
-                onToggleEdit: () => setState(() => _passwordEditable = !_passwordEditable),
-                extraTrailing: IconButton(
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                const SizedBox(height: 18),
+                _EditableField(
+                  label: 'Last Name',
+                  theme: theme,
+                  controller: _lastName,
+                  editable: _lastNameEditable,
+                  onToggleEdit:
+                      () => setState(
+                        () => _lastNameEditable = !_lastNameEditable,
+                      ),
+                ),
+                const SizedBox(height: 18),
+                _EditableField(
+                  label: 'Date of Birth',
+                  theme: theme,
+                  controller: _dob,
+                  editable: _dobEditable,
+                  forceReadOnly: true,
+                  onFieldTap: _dobEditable ? _pickDate : null,
+                  extraTrailing: Icon(
+                    Icons.calendar_today_outlined,
                     color: AppColors.navy,
+                    size: 18,
+                  ),
+                  onToggleEdit:
+                      () => setState(() => _dobEditable = !_dobEditable),
+                ),
+                const SizedBox(height: 18),
+                _EditableField(
+                  label: 'House Address',
+                  theme: theme,
+                  controller: _address,
+                  editable: _addressEditable,
+                  onToggleEdit:
+                      () =>
+                          setState(() => _addressEditable = !_addressEditable),
+                ),
+                const SizedBox(height: 18),
+                _EditableField(
+                  label: 'Phone Number',
+                  theme: theme,
+                  controller: _phone,
+                  editable: _phoneEditable,
+                  keyboardType: TextInputType.phone,
+                  onToggleEdit:
+                      () => setState(() => _phoneEditable = !_phoneEditable),
+                ),
+                const SizedBox(height: 18),
+                _EditableField(
+                  label: 'Email',
+                  theme: theme,
+                  controller: _email,
+                  editable: _emailEditable,
+                  keyboardType: TextInputType.emailAddress,
+                  onToggleEdit:
+                      () => setState(() => _emailEditable = !_emailEditable),
+                  validator: (value) {
+                    if (value == null || !value.contains('@'))
+                      return 'Enter a valid email';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 18),
+                _EditableField(
+                  label: 'Password',
+                  theme: theme,
+                  controller: _password,
+                  editable: _passwordEditable,
+                  obscureText: _obscurePassword,
+                  onToggleEdit:
+                      () => setState(
+                        () => _passwordEditable = !_passwordEditable,
+                      ),
+                  extraTrailing: IconButton(
+                    onPressed:
+                        () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: AppColors.navy,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              PillButton(
-                label: 'Save Changes',
-                backgroundColor: theme.accent,
-                textColor: theme.onAccent,
-                onPressed: _save,
-              ),
-            ],
+                const SizedBox(height: 32),
+                PillButton(
+                  label: 'Save Changes',
+                  backgroundColor: theme.accent,
+                  textColor: theme.onAccent,
+                  onPressed: _save,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -308,7 +381,13 @@ class _EditableField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.body(color: theme.foreground, weight: FontWeight.w600)),
+        Text(
+          label,
+          style: AppTextStyles.body(
+            color: theme.foreground,
+            weight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 8),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -334,7 +413,10 @@ class _EditableField extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: editable ? theme.accent : theme.accent.withValues(alpha: 0.15),
+                  color:
+                      editable
+                          ? theme.accent
+                          : theme.accent.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

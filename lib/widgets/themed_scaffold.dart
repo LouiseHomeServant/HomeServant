@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/responsive.dart';
 import '../models/user_role.dart';
 
 /// Solid-colour, scrollable page shell shared by every auth / onboarding
@@ -24,7 +25,7 @@ class ThemedScaffold extends StatelessWidget {
           children: [
             SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-              child: child,
+              child: ResponsiveCenter(child: child),
             ),
             if (showBackButton && Navigator.of(context).canPop())
               Positioned(

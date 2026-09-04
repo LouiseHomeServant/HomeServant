@@ -44,7 +44,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     if (kIsWeb) return;
     final controller = VideoPlayerController.asset('assets/videos/splash_bg.mp4');
     try {
-      await controller.initialize();
+      // Guards against a hang (rather than a thrown error) leaving the
+      // splash stuck waiting forever instead of falling back to the photo.
+      await controller.initialize().timeout(const Duration(seconds: 8));
       await controller.setLooping(false);
       await controller.setVolume(0);
       await controller.play();
@@ -54,8 +56,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         _videoController = controller;
         _videoReady = true;
       });
-    } catch (_) {
+    } catch (error, stack) {
       // Bundled video failed to load — the Ken Burns photo stays as the background.
+      debugPrint('Splash video failed to load: $error\n$stack');
       controller.dispose();
     }
   }

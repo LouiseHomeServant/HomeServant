@@ -117,7 +117,7 @@ enum DashboardTheme {
       case DashboardTheme.sand:
         return AppColors.navy;
       case DashboardTheme.classic:
-        return AppColors.white;
+        return AppColors.sand;
     }
   }
 

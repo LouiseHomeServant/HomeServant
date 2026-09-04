@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
+import '../../widgets/invite_friends_sheet.dart';
 import '../../widgets/theme_picker_sheet.dart';
 import '../../widgets/upload_picker.dart';
 import 'edit_profile_screen.dart';
+import 'settings_screen.dart';
+import 'wishlist_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.onLogOut});
@@ -54,14 +57,17 @@ class ProfileScreen extends StatelessWidget {
           label: 'WishList',
           theme: theme,
           badgeColor: badgeColor,
-          onTap: () {},
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => WishlistScreen(theme: theme))),
         ),
         _ProfileMenuTile(
           icon: Icons.settings_outlined,
           label: 'Settings',
           theme: theme,
           badgeColor: badgeColor,
-          onTap: () {},
+          onTap:
+              () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => SettingsScreen(theme: theme, onAccountClosed: onLogOut)),
+              ),
         ),
         _ProfileMenuTile(
           icon: Icons.remove_red_eye_outlined,
@@ -76,18 +82,11 @@ class ProfileScreen extends StatelessWidget {
           },
         ),
         _ProfileMenuTile(
-          icon: Icons.error_outline_rounded,
-          label: 'Alert',
-          theme: theme,
-          badgeColor: badgeColor,
-          onTap: () {},
-        ),
-        _ProfileMenuTile(
           icon: Icons.person_add_alt_outlined,
           label: 'Invite Friends',
           theme: theme,
           badgeColor: badgeColor,
-          onTap: () {},
+          onTap: () => showInviteFriendsSheet(context, theme: theme),
         ),
         _ProfileMenuTile(
           icon: Icons.logout_rounded,

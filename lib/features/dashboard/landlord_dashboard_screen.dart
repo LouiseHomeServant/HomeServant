@@ -9,6 +9,7 @@ import '../../widgets/home_servant_logo.dart';
 import 'models/property.dart';
 import 'profile_screen.dart';
 import 'widgets/bottom_nav.dart';
+import 'widgets/property_image.dart';
 
 class LandlordDashboardScreen extends StatefulWidget {
   const LandlordDashboardScreen({super.key});
@@ -182,12 +183,7 @@ class _LandlordPropertyTile extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(14),
-            child: Image.asset(
-              property.imageAsset,
-              width: 72,
-              height: 72,
-              fit: BoxFit.cover,
-            ),
+            child: PropertyImage(path: property.image, width: 72, height: 72),
           ),
           const SizedBox(width: 14),
           Expanded(

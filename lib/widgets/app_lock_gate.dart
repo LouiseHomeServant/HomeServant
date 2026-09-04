@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../state/app_state.dart';
+import 'app_lock_screen.dart';
+
+/// Wraps the whole app (via `MaterialApp.builder`) and shows [AppLockScreen]
+/// over everything whenever the app returns to the foreground after being
+/// backgrounded, if the user has turned on App Lock in Settings.
+class AppLockGate extends StatefulWidget {
+  const AppLockGate({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<AppLockGate> createState() => _AppLockGateState();
+}
+
+class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
+  bool _locked = false;
+  bool _wasBackgrounded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final appState = context.read<AppState>();
+    if (!appState.appLockEnabled || appState.appLockPin == null) return;
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      _wasBackgrounded = true;
+    } else if (state == AppLifecycleState.resumed && _wasBackgrounded) {
+      _wasBackgrounded = false;
+      setState(() => _locked = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
+    final pin = appState.appLockPin;
+    final showLock = _locked && appState.appLockEnabled && pin != null;
+    return Stack(
+      children: [
+        widget.child,
+        if (showLock) AppLockScreen(expectedPin: pin, onUnlocked: () => setState(() => _locked = false)),
+      ],
+    );
+  }
+}

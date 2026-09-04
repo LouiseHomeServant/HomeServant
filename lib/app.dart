@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'routes/app_router.dart';
 import 'state/app_state.dart';
+import 'widgets/app_lock_gate.dart';
 
 class HomeServantApp extends StatefulWidget {
   const HomeServantApp({super.key});
@@ -25,6 +26,7 @@ class _HomeServantAppState extends State<HomeServantApp> {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         routerConfig: _router,
+        builder: (context, child) => AppLockGate(child: child!),
       ),
     );
   }

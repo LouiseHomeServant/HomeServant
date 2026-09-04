@@ -26,12 +26,6 @@ class ProfileScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       children: [
-        Row(
-          children: [
-
-            Text('Profile Settings', style: AppTextStyles.heading(color: theme.accent, size: 20)),
-          ],
-        ),
         const SizedBox(height: 20),
         Container(
           width: 78,

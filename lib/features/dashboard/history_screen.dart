@@ -207,7 +207,7 @@ class _RatingStars extends StatelessWidget {
           onTap: () => onRate((index + 1).toDouble()),
           child: Padding(
             padding: const EdgeInsets.only(right: 2),
-            child: Icon(filled ? Icons.star_rounded : Icons.star_border_rounded, color: color, size: 22),
+            child: Icon(Icons.star_rounded, color: filled ? color : color.withValues(alpha: 0.3), size: 22),
           ),
         );
       }),

@@ -3,6 +3,7 @@ class Property {
     required this.id,
     required this.title,
     required this.location,
+    required this.state,
     required this.rating,
     required this.image,
     required this.category,
@@ -11,6 +12,7 @@ class Property {
     required this.bedrooms,
     required this.bathrooms,
     required this.description,
+    required this.landlordName,
     this.galleryImages = const [],
   });
 
@@ -20,6 +22,12 @@ class Property {
 
   final String title;
   final String location;
+
+  /// Nigerian state this listing is in — kept separate from [location] (the
+  /// display string, e.g. "Agege, Lagos") so the filter sheet's state
+  /// dropdown can match on it directly.
+  final String state;
+
   final double rating;
 
   /// Local asset path for the card and the hero image on the detail screen.
@@ -39,13 +47,18 @@ class Property {
   final int bathrooms;
   final String description;
 
+  /// Name shown as the other party when a tenant taps "Message Landlord" on
+  /// the detail screen.
+  final String landlordName;
+
   /// Extra interior shots shown in the detail screen's preview strip.
   final List<String> galleryImages;
 
-  String get priceLabel => '₦${_withThousandsSeparators(price)}/$priceUnit';
+  String get priceLabel => '₦${formatNaira(price)}/$priceUnit';
 }
 
-String _withThousandsSeparators(int amount) {
+/// Formats a whole naira amount with thousands separators, e.g. `2,500,000`.
+String formatNaira(int amount) {
   final digits = amount.toString();
   final buffer = StringBuffer();
   for (var i = 0; i < digits.length; i++) {
@@ -54,6 +67,49 @@ String _withThousandsSeparators(int amount) {
   }
   return buffer.toString();
 }
+
+/// The 36 Nigerian states plus the FCT, for the dashboard's state filter.
+/// All of today's mock listings are in Lagos — picking any other state is
+/// expected to show no results, same as it would for a real, sparser market.
+const nigerianStates = [
+  'Abia',
+  'Adamawa',
+  'Akwa Ibom',
+  'Anambra',
+  'Bauchi',
+  'Bayelsa',
+  'Benue',
+  'Borno',
+  'Cross River',
+  'Delta',
+  'Ebonyi',
+  'Edo',
+  'Ekiti',
+  'Enugu',
+  'FCT (Abuja)',
+  'Gombe',
+  'Imo',
+  'Jigawa',
+  'Kaduna',
+  'Kano',
+  'Katsina',
+  'Kebbi',
+  'Kogi',
+  'Kwara',
+  'Lagos',
+  'Nasarawa',
+  'Niger',
+  'Ogun',
+  'Ondo',
+  'Osun',
+  'Oyo',
+  'Plateau',
+  'Rivers',
+  'Sokoto',
+  'Taraba',
+  'Yobe',
+  'Zamfara',
+];
 
 // Shared interior shots used in every property's "Details Preview" strip.
 const _kitchenPhoto = 'assets/images/gallery_kitchen.jpg';
@@ -65,8 +121,10 @@ const mockProperties = [
   // House
   Property(
     id: 'house-agege-2br',
+    landlordName: 'Bode Alabi',
     title: '2 Bedroom Flat',
     location: 'Agege, Lagos',
+    state: 'Lagos',
     rating: 4.2,
     image: 'assets/images/2 bedroom.jpeg',
     category: 'House',
@@ -82,8 +140,10 @@ const mockProperties = [
   ),
   Property(
     id: 'house-magodo-3br',
+    landlordName: 'Chidinma Okafor',
     title: '3 Bedroom Duplex',
     location: 'Magodo, Lagos',
+    state: 'Lagos',
     rating: 4.7,
     image: 'assets/images/3bedroom.jpeg',
     category: 'House',
@@ -100,8 +160,10 @@ const mockProperties = [
   // Shortlet
   Property(
     id: 'shortlet-lekki-studio',
+    landlordName: 'Ngozi Umeh',
     title: 'Cozy Shortlet Studio',
     location: 'Lekki, Lagos',
+    state: 'Lagos',
     rating: 4.6,
     image: 'assets/images/shortlet_lekki_studio.jpg',
     category: 'Shortlet',
@@ -117,8 +179,10 @@ const mockProperties = [
   ),
   Property(
     id: 'shortlet-vi-luxury',
+    landlordName: 'Femi Adeyemi',
     title: 'Luxury Shortlet Apartment',
     location: 'Victoria Island, Lagos',
+    state: 'Lagos',
     rating: 4.9,
     image: 'assets/images/shortlet_vi_luxury.jpg',
     category: 'Shortlet',
@@ -135,8 +199,10 @@ const mockProperties = [
   // Self-Con
   Property(
     id: 'selfcon-yaba-studio',
+    landlordName: 'Tunde Bakare',
     title: 'Studio Self-Con',
     location: 'Yaba, Lagos',
+    state: 'Lagos',
     rating: 4.8,
     image: 'assets/images/selfcon_yaba_studio.jpg',
     category: 'Self-Con',
@@ -152,8 +218,10 @@ const mockProperties = [
   ),
   Property(
     id: 'selfcon-surulere-mini',
+    landlordName: 'Amaka Nwosu',
     title: 'Mini Self-Con Flat',
     location: 'Surulere, Lagos',
+    state: 'Lagos',
     rating: 4.0,
     image: 'assets/images/selfcon_surulere_mini.jpg',
     category: 'Self-Con',
@@ -169,8 +237,10 @@ const mockProperties = [
   // Apartment
   Property(
     id: 'apartment-opebi-4br',
+    landlordName: 'Kunle Fashola',
     title: '4 Bedroom Apartment',
     location: 'Opebi, Ikeja, Lagos',
+    state: 'Lagos',
     rating: 4.5,
     image: 'assets/images/apartment_opebi_4br.jpg',
     category: 'Apartment',
@@ -187,8 +257,10 @@ const mockProperties = [
   ),
   Property(
     id: 'apartment-ikeja-gra-1br',
+    landlordName: 'Halima Yusuf',
     title: '1 Bedroom Apartment',
     location: 'Ikeja GRA, Lagos',
+    state: 'Lagos',
     rating: 4.3,
     image: 'assets/images/apartment_ikeja_gra_1br.jpg',
     category: 'Apartment',

@@ -82,30 +82,39 @@ class _SetPinSheetState extends State<_SetPinSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _confirming ? 'Confirm your PIN' : 'Set a 4-digit PIN',
-              style: AppTextStyles.heading(color: AppColors.navy, size: 20),
+      child: Center(
+        // Bottom sheets span the full viewport width by default — on a wide
+        // browser window or tablet that stretches the keypad's width-driven
+        // row height (see PinKeypad's childAspectRatio) tall enough to push
+        // it off-screen, so this caps it to a phone-like width.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _confirming ? 'Confirm your PIN' : 'Set a 4-digit PIN',
+                  style: AppTextStyles.heading(color: AppColors.navy, size: 20),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "You'll be asked for this whenever Home Servant reopens.",
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.body(color: AppColors.hintGrey, size: 13),
+                ),
+                const SizedBox(height: 20),
+                PinDots(length: _pinLength, filled: _entry.length),
+                if (_error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(_error!, style: AppTextStyles.body(color: Colors.redAccent, size: 13)),
+                ],
+                const SizedBox(height: 12),
+                PinKeypad(onDigit: _onDigit, onBackspace: _onBackspace),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              "You'll be asked for this whenever Home Servant reopens.",
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body(color: AppColors.hintGrey, size: 13),
-            ),
-            const SizedBox(height: 20),
-            PinDots(length: _pinLength, filled: _entry.length),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(_error!, style: AppTextStyles.body(color: Colors.redAccent, size: 13)),
-            ],
-            const SizedBox(height: 12),
-            PinKeypad(onDigit: _onDigit, onBackspace: _onBackspace),
-          ],
+          ),
         ),
       ),
     );
@@ -152,25 +161,30 @@ class _VerifyPinSheetState extends State<_VerifyPinSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(widget.title, textAlign: TextAlign.center, style: AppTextStyles.heading(color: AppColors.navy, size: 18)),
-            const SizedBox(height: 20),
-            PinDots(length: _pinLength, filled: _entry.length),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(_error!, style: AppTextStyles.body(color: Colors.redAccent, size: 13)),
-            ],
-            const SizedBox(height: 12),
-            PinKeypad(onDigit: _onDigit, onBackspace: _onBackspace),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancel', style: AppTextStyles.body(color: AppColors.hintGrey, weight: FontWeight.w600)),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(widget.title, textAlign: TextAlign.center, style: AppTextStyles.heading(color: AppColors.navy, size: 18)),
+                const SizedBox(height: 20),
+                PinDots(length: _pinLength, filled: _entry.length),
+                if (_error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(_error!, style: AppTextStyles.body(color: Colors.redAccent, size: 13)),
+                ],
+                const SizedBox(height: 12),
+                PinKeypad(onDigit: _onDigit, onBackspace: _onBackspace),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('Cancel', style: AppTextStyles.body(color: AppColors.hintGrey, weight: FontWeight.w600)),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

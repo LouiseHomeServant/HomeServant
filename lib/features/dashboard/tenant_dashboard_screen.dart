@@ -20,6 +20,8 @@ class TenantDashboardScreen extends StatefulWidget {
   State<TenantDashboardScreen> createState() => _TenantDashboardScreenState();
 }
 
+enum _PriceSort { none, lowToHigh, highToLow }
+
 class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
   static const _categories = ['House', 'Shortlet', 'Self-Con', 'Apartment'];
   int _selectedCategory = 0;
@@ -27,8 +29,13 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
 
   final _searchController = TextEditingController();
   String _searchQuery = '';
-  double _minRating = 0;
-  bool _sortTopRatedFirst = false;
+
+  double? _minPrice;
+  double? _maxPrice;
+  _PriceSort _priceSort = _PriceSort.none;
+  String? _selectedState;
+  String _locationQuery = '';
+
   bool _hasUnreadNotifications = true;
 
   @override
@@ -37,8 +44,21 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
     super.dispose();
   }
 
+  void _selectCategory(int index) {
+    setState(() {
+      _selectedCategory = index;
+      // Price bands aren't comparable across categories (yearly rent vs.
+      // nightly shortlet rates), so a filter set for one tab would just
+      // silently zero out another's results — reset it on switch instead.
+      _minPrice = null;
+      _maxPrice = null;
+      _priceSort = _PriceSort.none;
+    });
+  }
+
   List<Property> get _filteredProperties {
     final query = _searchQuery.trim().toLowerCase();
+    final locationQuery = _locationQuery.trim().toLowerCase();
     final selectedCategory = _categories[_selectedCategory];
     final filtered =
         mockProperties.where((property) {
@@ -47,20 +67,38 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
               property.title.toLowerCase().contains(query) ||
               property.location.toLowerCase().contains(query);
           final matchesCategory = property.category == selectedCategory;
-          final matchesRating = property.rating >= _minRating;
-          return matchesQuery && matchesCategory && matchesRating;
+          final matchesState = _selectedState == null || property.state == _selectedState;
+          final matchesLocation = locationQuery.isEmpty || property.location.toLowerCase().contains(locationQuery);
+          final matchesMinPrice = _minPrice == null || property.price >= _minPrice!;
+          final matchesMaxPrice = _maxPrice == null || property.price <= _maxPrice!;
+          return matchesQuery && matchesCategory && matchesState && matchesLocation && matchesMinPrice && matchesMaxPrice;
         }).toList();
-    if (_sortTopRatedFirst) {
-      filtered.sort((a, b) => b.rating.compareTo(a.rating));
+    switch (_priceSort) {
+      case _PriceSort.lowToHigh:
+        filtered.sort((a, b) => a.price.compareTo(b.price));
+      case _PriceSort.highToLow:
+        filtered.sort((a, b) => b.price.compareTo(a.price));
+      case _PriceSort.none:
+        break;
     }
     return filtered;
   }
 
   Future<void> _openFilterSheet(DashboardTheme theme) async {
-    var minRating = _minRating;
-    var sortTopRatedFirst = _sortTopRatedFirst;
+    final categoryPrices =
+        mockProperties.where((p) => p.category == _categories[_selectedCategory]).map((p) => p.price.toDouble()).toList();
+    final boundsMin = categoryPrices.isEmpty ? 0.0 : categoryPrices.reduce((a, b) => a < b ? a : b);
+    final boundsMax = categoryPrices.isEmpty ? 0.0 : categoryPrices.reduce((a, b) => a > b ? a : b);
+    final hasRange = boundsMax > boundsMin;
+
+    var priceRange = RangeValues(_minPrice ?? boundsMin, _maxPrice ?? boundsMax);
+    var priceSort = _priceSort;
+    var selectedState = _selectedState;
+    final locationController = TextEditingController(text: _locationQuery);
+
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: theme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -69,101 +107,152 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Filters',
-                    style: AppTextStyles.heading(
-                      color: theme.onSurface,
-                      size: 18,
+              padding: EdgeInsets.fromLTRB(20, 20, 20, 32 + MediaQuery.of(context).viewInsets.bottom),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Filters',
+                      style: AppTextStyles.heading(color: theme.onSurface, size: 18),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    'Minimum rating',
-                    style: AppTextStyles.body(
-                      color: theme.onSurface,
-                      weight: FontWeight.w600,
+                    const SizedBox(height: 18),
+                    Text(
+                      'Price Range',
+                      style: AppTextStyles.body(color: theme.onSurface, weight: FontWeight.w600),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    children: [
-                      for (final option in const [0.0, 4.0, 4.5])
-                        ChoiceChip(
-                          label: Text(
-                            option == 0
-                                ? 'Any'
-                                : '${option.toStringAsFixed(1)}+',
+                    const SizedBox(height: 4),
+                    Text(
+                      '₦${formatNaira(priceRange.start.round())} – ₦${formatNaira(priceRange.end.round())}',
+                      style: AppTextStyles.body(color: theme.onSurface.withValues(alpha: 0.7), size: 13),
+                    ),
+                    if (hasRange)
+                      RangeSlider(
+                        values: priceRange,
+                        min: boundsMin,
+                        max: boundsMax,
+                        activeColor: theme.accent,
+                        onChanged: (values) => setSheetState(() => priceRange = values),
+                      )
+                    else
+                      const SizedBox(height: 12),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sort by Price',
+                      style: AppTextStyles.body(color: theme.onSurface, weight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      children: [
+                        for (final option in _PriceSort.values)
+                          ChoiceChip(
+                            label: Text(
+                              switch (option) {
+                                _PriceSort.none => 'None',
+                                _PriceSort.lowToHigh => 'Low to High',
+                                _PriceSort.highToLow => 'High to Low',
+                              },
+                            ),
+                            selected: priceSort == option,
+                            onSelected: (_) => setSheetState(() => priceSort = option),
+                            selectedColor: theme.accent,
+                            labelStyle: AppTextStyles.body(
+                              color: priceSort == option ? theme.onAccent : theme.onSurface,
+                              weight: FontWeight.w600,
+                            ),
+                            backgroundColor: theme.onSurface.withValues(alpha: 0.06),
                           ),
-                          selected: minRating == option,
-                          onSelected:
-                              (_) => setSheetState(() => minRating = option),
-                          selectedColor: theme.accent,
-                          labelStyle: AppTextStyles.body(
-                            color:
-                                minRating == option
-                                    ? theme.onAccent
-                                    : theme.onSurface,
-                            weight: FontWeight.w600,
-                          ),
-                          backgroundColor: theme.onSurface.withValues(
-                            alpha: 0.06,
-                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      'State',
+                      style: AppTextStyles.body(color: theme.onSurface, weight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String?>(
+                      value: selectedState,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: theme.onSurface.withValues(alpha: 0.06),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      ),
+                      style: AppTextStyles.body(color: theme.onSurface),
+                      items: [
+                        DropdownMenuItem(value: null, child: Text('Any State', style: AppTextStyles.body(color: theme.onSurface))),
+                        for (final state in nigerianStates)
+                          DropdownMenuItem(value: state, child: Text(state, style: AppTextStyles.body(color: theme.onSurface))),
+                      ],
+                      onChanged:
+                          (value) => setSheetState(() {
+                            selectedState = value;
+                            if (value == null) locationController.clear();
+                          }),
+                    ),
+                    if (selectedState != null) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        'Location in $selectedState',
+                        style: AppTextStyles.body(color: theme.onSurface, weight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: locationController,
+                        style: AppTextStyles.body(color: theme.onSurface),
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Ikeja, Lekki, Yaba…',
+                          filled: true,
+                          fillColor: theme.onSurface.withValues(alpha: 0.06),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 18),
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    value: sortTopRatedFirst,
-                    onChanged:
-                        (value) =>
-                            setSheetState(() => sortTopRatedFirst = value),
-                    activeColor: theme.accent,
-                    title: Text(
-                      'Sort by top rated',
-                      style: AppTextStyles.body(
-                        color: theme.onSurface,
-                        weight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.accent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.accent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
+                          ),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (categoryPrices.isEmpty) {
+                              _minPrice = null;
+                              _maxPrice = null;
+                            } else {
+                              _minPrice = priceRange.start;
+                              _maxPrice = priceRange.end;
+                            }
+                            _priceSort = priceSort;
+                            _selectedState = selectedState;
+                            _locationQuery = selectedState == null ? '' : locationController.text;
+                          });
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(
+                          'Apply',
+                          style: AppTextStyles.button(color: theme.onAccent),
                         ),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _minRating = minRating;
-                          _sortTopRatedFirst = sortTopRatedFirst;
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(
-                        'Apply',
-                        style: AppTextStyles.button(color: theme.onAccent),
-                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
         );
       },
     );
+    locationController.dispose();
   }
 
   @override
@@ -243,7 +332,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                                     ),
                                   ),
                               child: Icon(
-                                Icons.mail_outline_rounded,
+                                Icons.send_outlined,
                                 color: theme.foreground,
                               ),
                             ),
@@ -396,7 +485,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                   itemBuilder: (context, index) {
                     final selected = index == _selectedCategory;
                     return GestureDetector(
-                      onTap: () => setState(() => _selectedCategory = index),
+                      onTap: () => _selectCategory(index),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 22),
                         alignment: Alignment.center,

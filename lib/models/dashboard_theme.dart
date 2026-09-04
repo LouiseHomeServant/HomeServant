@@ -94,6 +94,7 @@ enum DashboardTheme {
     }
   }
 
+
   /// Background of the floating bottom navigator. Deliberately distinct from
   /// [background] so the bar reads as its own surface against every themed
   /// page: blue on Classic White, sand on Midnight, white on Sand.

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
+import 'chat_thread_screen.dart';
 import 'models/property.dart';
 import 'property_gallery_screen.dart';
 import 'widgets/property_image.dart';
@@ -26,6 +27,25 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PropertyGalleryScreen(images: _allPhotos, initialIndex: index, title: widget.property.title),
+      ),
+    );
+  }
+
+  void _messageLandlord() {
+    final property = widget.property;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => ChatThreadScreen(
+              theme: widget.theme,
+              contactName: property.landlordName,
+              initialMessages: [
+                ChatMessage(
+                  text: "Hi, I'm interested in ${property.title} in ${property.location}. Is it still available?",
+                  fromMe: true,
+                ),
+              ],
+            ),
       ),
     );
   }
@@ -177,6 +197,26 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                 );
                               },
                               child: Text('Rent Now', style: AppTextStyles.button(color: theme.onAccent)),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 18),
+                                side: BorderSide(color: theme.accent, width: 1.4),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                              ),
+                              onPressed: _messageLandlord,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.chat_bubble_outline_rounded, color: theme.accent, size: 18),
+                                  const SizedBox(width: 10),
+                                  Text('Message Landlord', style: AppTextStyles.button(color: theme.accent, size: 15)),
+                                ],
+                              ),
                             ),
                           ),
                         ],

@@ -8,7 +8,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const HomeServantApp());
-    await tester.pumpAndSettle();
+    // The splash screen's Ken Burns background animation repeats forever, so
+    // pumpAndSettle() here would never converge — pump one bounded frame
+    // instead. Its layout is static and unconditional, so this is enough for
+    // the EXPLORE button to be present and tappable.
+    await tester.pump(const Duration(milliseconds: 100));
 
     await tester.tap(find.text('EXPLORE'));
     await tester.pumpAndSettle();
@@ -34,7 +38,10 @@ void main() {
     'Tenant signup -> OTP -> onboarding 1 -> onboarding 2 -> dashboard',
     (tester) async {
       await tester.pumpWidget(const HomeServantApp());
-      await tester.pumpAndSettle();
+      // See the comment on the other tests' equivalent line — the splash
+      // screen's repeating Ken Burns animation means pumpAndSettle() here
+      // would never converge.
+      await tester.pump(const Duration(milliseconds: 100));
 
       await tester.tap(find.text('EXPLORE'));
       await tester.pumpAndSettle();
@@ -81,7 +88,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const HomeServantApp());
-    await tester.pumpAndSettle();
+    // The splash screen's Ken Burns background animation repeats forever, so
+    // pumpAndSettle() here would never converge — pump one bounded frame
+    // instead. Its layout is static and unconditional, so this is enough for
+    // the EXPLORE button to be present and tappable.
+    await tester.pump(const Duration(milliseconds: 100));
 
     await tester.tap(find.text('EXPLORE'));
     await tester.pumpAndSettle();
@@ -102,7 +113,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const HomeServantApp());
-    await tester.pumpAndSettle();
+    // The splash screen's Ken Burns background animation repeats forever, so
+    // pumpAndSettle() here would never converge — pump one bounded frame
+    // instead. Its layout is static and unconditional, so this is enough for
+    // the EXPLORE button to be present and tappable.
+    await tester.pump(const Duration(milliseconds: 100));
 
     await tester.tap(find.text('EXPLORE'));
     await tester.pumpAndSettle();
@@ -119,7 +134,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const HomeServantApp());
-    await tester.pumpAndSettle();
+    // The splash screen's Ken Burns background animation repeats forever, so
+    // pumpAndSettle() here would never converge — pump one bounded frame
+    // instead. Its layout is static and unconditional, so this is enough for
+    // the EXPLORE button to be present and tappable.
+    await tester.pump(const Duration(milliseconds: 100));
 
     await tester.tap(find.text('EXPLORE'));
     await tester.pumpAndSettle();
@@ -149,7 +168,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const HomeServantApp());
-    await tester.pumpAndSettle();
+    // The splash screen's Ken Burns background animation repeats forever, so
+    // pumpAndSettle() here would never converge — pump one bounded frame
+    // instead. Its layout is static and unconditional, so this is enough for
+    // the EXPLORE button to be present and tappable.
+    await tester.pump(const Duration(milliseconds: 100));
 
     await tester.tap(find.text('EXPLORE'));
     await tester.pumpAndSettle();
@@ -177,7 +200,10 @@ void main() {
     'Landlord signup -> OTP -> onboarding 1 -> onboarding 2 -> dashboard',
     (tester) async {
       await tester.pumpWidget(const HomeServantApp());
-      await tester.pumpAndSettle();
+      // See the comment on the other tests' equivalent line — the splash
+      // screen's repeating Ken Burns animation means pumpAndSettle() here
+      // would never converge.
+      await tester.pump(const Duration(milliseconds: 100));
 
       await tester.tap(find.text('EXPLORE'));
       await tester.pumpAndSettle();

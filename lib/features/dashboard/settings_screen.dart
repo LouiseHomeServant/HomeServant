@@ -7,7 +7,7 @@ import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
 import '../../widgets/app_lock_pin_sheet.dart';
 import '../auth/verify_otp_screen.dart';
-import 'legal_document_screen.dart';
+import 'privacy&terms_screen.dart';
 import 'messages_screen.dart';
 
 class SettingsScreen extends StatelessWidget {

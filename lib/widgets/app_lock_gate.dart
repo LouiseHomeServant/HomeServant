@@ -5,7 +5,10 @@ import 'app_lock_screen.dart';
 
 /// Wraps the whole app (via `MaterialApp.builder`) and shows [AppLockScreen]
 /// over everything whenever the app returns to the foreground after being
-/// backgrounded, if the user has turned on App Lock in Settings.
+/// backgrounded, or on a fresh cold start if App Lock was already on when
+/// this launch started (turning it on mid-session doesn't itself re-lock
+/// the app you're already in — only the next background/resume or restart
+/// does).
 class AppLockGate extends StatefulWidget {
   const AppLockGate({super.key, required this.child});
 
@@ -18,6 +21,12 @@ class AppLockGate extends StatefulWidget {
 class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
   bool _locked = false;
   bool _wasBackgrounded = false;
+
+  // Set once, the first time AppState.isLoaded turns true (see build()), so
+  // the cold-start lock decision reflects the setting as it was *before*
+  // this launch — not a value flipped live during the current session (e.g.
+  // finishing PIN setup in Settings shouldn't re-lock you out immediately).
+  bool _checkedInitialLockState = false;
 
   @override
   void initState() {
@@ -46,6 +55,10 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+    if (!_checkedInitialLockState && appState.isLoaded) {
+      _checkedInitialLockState = true;
+      _locked = appState.appLockEnabled;
+    }
     final pin = appState.appLockPin;
     final showLock = _locked && appState.appLockEnabled && pin != null;
     return Stack(

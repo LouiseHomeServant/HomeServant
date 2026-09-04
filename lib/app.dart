@@ -18,6 +18,16 @@ class _HomeServantAppState extends State<HomeServantApp> {
   late final GoRouter _router = buildAppRouter();
 
   @override
+  void initState() {
+    super.initState();
+    // Fire-and-forget: restores the previous session's saved state (if any).
+    // The UI mounts immediately with defaults and simply rebuilds once this
+    // resolves, via the ChangeNotifierProvider below — no loading gate needed
+    // since a local read is fast enough that this is imperceptible.
+    _appState.load();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _appState,

@@ -53,23 +53,31 @@ class _AppLockScreenState extends State<AppLockScreen> {
         color: AppColors.navy,
         child: SafeArea(
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.lock_outline_rounded, color: Colors.white, size: 40),
-                  const SizedBox(height: 16),
-                  Text('Enter your PIN', style: AppTextStyles.heading(color: Colors.white, size: 20)),
-                  const SizedBox(height: 20),
-                  PinDots(length: _pinLength, filled: _entry.length, color: Colors.white),
-                  if (_error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(_error!, style: AppTextStyles.body(color: Colors.redAccent.shade100, size: 13)),
+            child: ConstrainedBox(
+              // Without this, the keypad's width-driven row height (see
+              // PinKeypad's childAspectRatio) blows up on any viewport wider
+              // than a phone — a browser window or tablet — tall enough to
+              // push the keypad below the screen, silently making the lock
+              // gate unusable even though it "shows" fine.
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.lock_outline_rounded, color: Colors.white, size: 40),
+                    const SizedBox(height: 16),
+                    Text('Enter your PIN', style: AppTextStyles.heading(color: Colors.white, size: 20)),
+                    const SizedBox(height: 20),
+                    PinDots(length: _pinLength, filled: _entry.length, color: Colors.white),
+                    if (_error != null) ...[
+                      const SizedBox(height: 12),
+                      Text(_error!, style: AppTextStyles.body(color: Colors.redAccent.shade100, size: 13)),
+                    ],
+                    const SizedBox(height: 16),
+                    PinKeypad(onDigit: _onDigit, onBackspace: _onBackspace, color: Colors.white),
                   ],
-                  const SizedBox(height: 16),
-                  PinKeypad(onDigit: _onDigit, onBackspace: _onBackspace, color: Colors.white),
-                ],
+                ),
               ),
             ),
           ),

@@ -192,11 +192,20 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                               ),
                               onPressed: () {
+                                final isShortlet = property.category == 'Shortlet';
+                                context.read<AppState>().recordRentalOrBooking(property.id, isShortlet: isShortlet);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Rent request sent for ${property.title}')),
+                                  SnackBar(
+                                    content: Text(
+                                      '${isShortlet ? 'Booking' : 'Rent'} request sent for ${property.title}',
+                                    ),
+                                  ),
                                 );
                               },
-                              child: Text('Rent Now', style: AppTextStyles.button(color: theme.onAccent)),
+                              child: Text(
+                                property.category == 'Shortlet' ? 'Book Now' : 'Rent Now',
+                                style: AppTextStyles.button(color: theme.onAccent),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -214,7 +223,10 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                 children: [
                                   Icon(Icons.chat_bubble_outline_rounded, color: theme.accent, size: 18),
                                   const SizedBox(width: 10),
-                                  Text('Message Landlord', style: AppTextStyles.button(color: theme.accent, size: 15)),
+                                  Text(
+                                    property.category == 'Shortlet' ? 'Message Owner' : 'Message Landlord',
+                                    style: AppTextStyles.button(color: theme.accent, size: 15),
+                                  ),
                                 ],
                               ),
                             ),

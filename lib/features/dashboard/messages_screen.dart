@@ -3,7 +3,6 @@ import '../../core/responsive.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
 import 'chat_thread_screen.dart';
-import 'new_chat_screen.dart';
 
 class _Conversation {
   _Conversation({
@@ -12,7 +11,6 @@ class _Conversation {
     required this.time,
     required this.unread,
     required this.messages,
-    this.isGroup = false,
   });
 
   final String name;
@@ -20,7 +18,6 @@ class _Conversation {
   String time;
   bool unread;
   final List<ChatMessage> messages;
-  final bool isGroup;
 }
 
 final _mockConversations = [
@@ -95,32 +92,6 @@ class MessagesScreen extends StatefulWidget {
 class _MessagesScreenState extends State<MessagesScreen> {
   late final List<_Conversation> _conversations = List.of(_mockConversations);
 
-  Future<void> _startNewChat() async {
-    final result = await Navigator.of(
-      context,
-    ).push<NewChatResult>(MaterialPageRoute(builder: (_) => NewChatScreen(theme: widget.theme)));
-    if (result == null || !mounted) return;
-
-    final existingIndex = _conversations.indexWhere((c) => c.name == result.name && c.isGroup == result.isGroup);
-    final conversation =
-        existingIndex != -1
-            ? _conversations[existingIndex]
-            : _Conversation(
-              name: result.name,
-              preview: result.isGroup ? 'Group created — say hi!' : 'Say hi to ${result.name}!',
-              time: 'Now',
-              unread: false,
-              isGroup: result.isGroup,
-              messages: [],
-            );
-
-    if (existingIndex == -1) {
-      setState(() => _conversations.insert(0, conversation));
-    }
-    if (!mounted) return;
-    await _openThread(conversation);
-  }
-
   Future<void> _openThread(_Conversation convo) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -144,13 +115,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
           'Messages',
           style: AppTextStyles.heading(color: theme.foreground, size: 18),
         ),
-        actions: [
-          IconButton(
-            onPressed: _startNewChat,
-            icon: Icon(Icons.add_comment_outlined, color: theme.foreground),
-            tooltip: 'New message',
-          ),
-        ],
       ),
       body: SafeArea(
         child: ResponsiveCenter(
@@ -159,7 +123,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               _conversations.isEmpty
                   ? Center(
                     child: Text(
-                      'No conversations yet — tap the icon above to message someone.',
+                      'No conversations yet.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.body(color: theme.foreground.withValues(alpha: 0.6)),
                     ),
@@ -190,10 +154,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               CircleAvatar(
                                 radius: 24,
                                 backgroundColor: theme.accent.withValues(alpha: 0.25),
-                                child: Icon(
-                                  convo.isGroup ? Icons.groups_rounded : Icons.person,
-                                  color: theme.accent,
-                                ),
+                                child: Icon(Icons.person, color: theme.accent),
                               ),
                               const SizedBox(width: 14),
                               Expanded(

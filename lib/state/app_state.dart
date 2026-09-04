@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../features/dashboard/models/rental_record.dart';
 import '../models/dashboard_theme.dart';
 import '../models/user_role.dart';
 import '../services/app_icon_service.dart';
@@ -46,6 +47,34 @@ class AppState extends ChangeNotifier {
     if (!favoritePropertyIds.remove(propertyId)) {
       favoritePropertyIds.add(propertyId);
     }
+    notifyListeners();
+  }
+
+  // --- History: rented & booked properties -------------------------------
+  final Map<String, RentalRecord> _rentalHistory = {};
+
+  Map<String, RentalRecord> get rentalHistory => Map.unmodifiable(_rentalHistory);
+
+  /// Records a rent or a shortlet booking for [propertyId], starting now —
+  /// also used to renew a lease or rebook a shortlet, which simply resets
+  /// the period to start today. A prior rating for the same property
+  /// carries over, since renewing a lease you've already reviewed shouldn't
+  /// wipe that review.
+  void recordRentalOrBooking(String propertyId, {required bool isShortlet}) {
+    final now = DateTime.now();
+    final existing = _rentalHistory[propertyId];
+    _rentalHistory[propertyId] = RentalRecord(
+      startDate: now,
+      endDate: now.add(isShortlet ? const Duration(days: 3) : const Duration(days: 365)),
+      rating: existing?.rating,
+    );
+    notifyListeners();
+  }
+
+  void rateHistoryProperty(String propertyId, double rating) {
+    final existing = _rentalHistory[propertyId];
+    if (existing == null) return;
+    _rentalHistory[propertyId] = existing.copyWith(rating: rating);
     notifyListeners();
   }
 
@@ -192,6 +221,7 @@ class AppState extends ChangeNotifier {
     dateOfBirth = null;
     profilePhotoPath = null;
     favoritePropertyIds.clear();
+    _rentalHistory.clear();
     pushNotificationsEnabled = true;
     newMessageNotifications = true;
     propertyUpdateNotifications = true;
@@ -231,6 +261,7 @@ class AppState extends ChangeNotifier {
     'profilePhotoPath': profilePhotoPath,
     'dashboardTheme': dashboardTheme.name,
     'favoritePropertyIds': favoritePropertyIds.toList(),
+    'rentalHistory': _rentalHistory.map((id, record) => MapEntry(id, record.toJson())),
     'pushNotificationsEnabled': pushNotificationsEnabled,
     'newMessageNotifications': newMessageNotifications,
     'propertyUpdateNotifications': propertyUpdateNotifications,
@@ -261,6 +292,13 @@ class AppState extends ChangeNotifier {
     favoritePropertyIds
       ..clear()
       ..addAll((json['favoritePropertyIds'] as List?)?.cast<String>() ?? const []);
+    _rentalHistory
+      ..clear()
+      ..addAll(
+        (json['rentalHistory'] as Map<String, dynamic>? ?? const {}).map(
+          (id, value) => MapEntry(id, RentalRecord.fromJson(value as Map<String, dynamic>)),
+        ),
+      );
     pushNotificationsEnabled = json['pushNotificationsEnabled'] as bool? ?? true;
     newMessageNotifications = json['newMessageNotifications'] as bool? ?? true;
     propertyUpdateNotifications = json['propertyUpdateNotifications'] as bool? ?? true;

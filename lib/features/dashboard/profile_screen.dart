@@ -7,6 +7,7 @@ import '../../widgets/invite_friends_sheet.dart';
 import '../../widgets/theme_picker_sheet.dart';
 import '../../widgets/upload_picker.dart';
 import 'edit_profile_screen.dart';
+import 'history_screen.dart';
 import 'settings_screen.dart';
 import 'wishlist_screen.dart';
 
@@ -27,8 +28,7 @@ class ProfileScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.badge_outlined, color: theme.accent, size: 22),
-            const SizedBox(width: 10),
+
             Text('Profile Settings', style: AppTextStyles.heading(color: theme.accent, size: 20)),
           ],
         ),
@@ -58,6 +58,13 @@ class ProfileScreen extends StatelessWidget {
           theme: theme,
           badgeColor: badgeColor,
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => WishlistScreen(theme: theme))),
+        ),
+        _ProfileMenuTile(
+          icon: Icons.history_rounded,
+          label: 'History',
+          theme: theme,
+          badgeColor: badgeColor,
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => HistoryScreen(theme: theme))),
         ),
         _ProfileMenuTile(
           icon: Icons.settings_outlined,

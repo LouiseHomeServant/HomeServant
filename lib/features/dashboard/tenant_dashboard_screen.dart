@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/responsive.dart';
@@ -21,6 +22,26 @@ class TenantDashboardScreen extends StatefulWidget {
 }
 
 enum _PriceSort { none, lowToHigh, highToLow }
+
+String _formatWithThousandsSeparator(num value) {
+  final digits = value.round().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    if (i != 0 && (digits.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(digits[i]);
+  }
+  return buffer.toString();
+}
+
+class _ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final digitsOnly = newValue.text.replaceAll(',', '');
+    if (digitsOnly.isEmpty) return newValue.copyWith(text: '');
+    final formatted = _formatWithThousandsSeparator(int.parse(digitsOnly));
+    return TextEditingValue(text: formatted, selection: TextSelection.collapsed(offset: formatted.length));
+  }
+}
 
 class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
   static const _categories = ['House', 'Shortlet', 'Self-Con', 'Apartment'];
@@ -95,6 +116,8 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
     var priceSort = _priceSort;
     var selectedState = _selectedState;
     final locationController = TextEditingController(text: _locationQuery);
+    final minPriceController = TextEditingController(text: _formatWithThousandsSeparator(priceRange.start));
+    final maxPriceController = TextEditingController(text: _formatWithThousandsSeparator(priceRange.end));
 
     await showModalBottomSheet<void>(
       context: context,
@@ -122,18 +145,74 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                       'Price Range',
                       style: AppTextStyles.body(color: theme.onSurface, weight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '₦${formatNaira(priceRange.start.round())} – ₦${formatNaira(priceRange.end.round())}',
-                      style: AppTextStyles.body(color: theme.onSurface.withValues(alpha: 0.7), size: 13),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: minPriceController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsSeparatorInputFormatter()],
+                            style: AppTextStyles.body(color: theme.onSurface),
+                            decoration: InputDecoration(
+                              prefixText: '₦ ',
+                              labelText: 'Min',
+                              filled: true,
+                              fillColor: theme.onSurface.withValues(alpha: 0.06),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            ),
+                            onChanged: (text) {
+                              final value = double.tryParse(text.replaceAll(',', ''));
+                              if (value == null) return;
+                              setSheetState(() {
+                                priceRange = RangeValues(value, value > priceRange.end ? value : priceRange.end);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: maxPriceController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsSeparatorInputFormatter()],
+                            style: AppTextStyles.body(color: theme.onSurface),
+                            decoration: InputDecoration(
+                              prefixText: '₦ ',
+                              labelText: 'Max',
+                              filled: true,
+                              fillColor: theme.onSurface.withValues(alpha: 0.06),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            ),
+                            onChanged: (text) {
+                              final value = double.tryParse(text.replaceAll(',', ''));
+                              if (value == null) return;
+                              setSheetState(() {
+                                priceRange = RangeValues(value < priceRange.start ? value : priceRange.start, value);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 8),
                     if (hasRange)
                       RangeSlider(
-                        values: priceRange,
+                        values: RangeValues(
+                          priceRange.start.clamp(boundsMin, boundsMax),
+                          priceRange.end.clamp(boundsMin, boundsMax),
+                        ),
                         min: boundsMin,
                         max: boundsMax,
                         activeColor: theme.accent,
-                        onChanged: (values) => setSheetState(() => priceRange = values),
+                        onChanged:
+                            (values) => setSheetState(() {
+                              priceRange = values;
+                              minPriceController.text = _formatWithThousandsSeparator(values.start);
+                              maxPriceController.text = _formatWithThousandsSeparator(values.end);
+                            }),
                       )
                     else
                       const SizedBox(height: 12),
@@ -253,6 +332,8 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
       },
     );
     locationController.dispose();
+    minPriceController.dispose();
+    maxPriceController.dispose();
   }
 
   @override
@@ -332,7 +413,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                                     ),
                                   ),
                               child: Icon(
-                                Icons.send_outlined,
+                                Icons.mail_outline_rounded,
                                 color: theme.foreground,
                               ),
                             ),

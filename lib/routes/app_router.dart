@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +19,34 @@ import '../features/onboarding/get_started_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../models/user_role.dart';
 import '../state/app_state.dart';
+import '../widgets/app_lock_screen.dart';
+
+/// Entry point once login details have been submitted. If the account has
+/// Two-Factor Authentication on, the OTP step comes first — this is where a
+/// real backend would issue the code and later reject a wrong one; for now
+/// entering any 4-digit code passes, matching the rest of this mocked auth
+/// flow. Otherwise skips straight to the post-2FA checks.
+void _proceedAfterLogin(BuildContext context) {
+  final appState = context.read<AppState>();
+  if (appState.twoFactorEnabled) {
+    context.go('/login-2fa');
+  } else {
+    _proceedPastTwoFactor(context);
+  }
+}
+
+/// After identity is confirmed (2FA passed, or not required), goes straight
+/// to the dashboard unless App Lock is on — in which case the PIN gate is
+/// interposed first, so a device-level lock can't be skipped just because
+/// this login flow is mocked (there's no real backend to gate on).
+void _proceedPastTwoFactor(BuildContext context) {
+  final appState = context.read<AppState>();
+  if (appState.appLockEnabled && appState.appLockPin != null) {
+    context.go('/app-lock-verify');
+  } else {
+    context.go('/dashboard');
+  }
+}
 
 GoRouter buildAppRouter() {
   return GoRouter(
@@ -52,14 +81,14 @@ GoRouter buildAppRouter() {
       GoRoute(
         path: '/login-landlord',
         builder: (context, state) => LoginLandlordScreen(
-          onLogin: () => context.go('/dashboard'),
+          onLogin: () => _proceedAfterLogin(context),
           onSignUp: () => context.push('/signup-landlord'),
         ),
       ),
       GoRoute(
         path: '/login-tenant',
         builder: (context, state) => LoginTenantScreen(
-          onLogin: () => context.go('/dashboard'),
+          onLogin: () => _proceedAfterLogin(context),
           onSignUp: () => context.push('/signup'),
         ),
       ),
@@ -148,6 +177,32 @@ GoRouter buildAppRouter() {
         builder: (context, state) => SignupTenant2Screen(
           onFinish: () => context.go('/dashboard'),
         ),
+      ),
+      GoRoute(
+        path: '/login-2fa',
+        builder: (context, state) {
+          final appState = context.watch<AppState>();
+          return VerifyOtpScreen(
+            role: appState.role,
+            email: appState.email.isEmpty ? 'your email' : appState.email,
+            onVerified: () => _proceedPastTwoFactor(context),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/app-lock-verify',
+        builder: (context, state) {
+          final appState = context.watch<AppState>();
+          final pin = appState.appLockPin;
+          // Guards against a route ever being reached without a PIN set —
+          // shouldn't happen since _proceedPastTwoFactor only routes here when
+          // one exists, but going straight through is safer than a crash.
+          if (pin == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/dashboard'));
+            return const SizedBox.shrink();
+          }
+          return AppLockScreen(expectedPin: pin, onUnlocked: () => context.go('/dashboard'));
+        },
       ),
       GoRoute(
         path: '/dashboard',

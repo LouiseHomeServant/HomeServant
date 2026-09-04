@@ -302,8 +302,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   onToggleEdit:
                       () => setState(() => _emailEditable = !_emailEditable),
                   validator: (value) {
-                    if (value == null || !value.contains('@'))
+                    if (value == null || !value.contains('@')) {
                       return 'Enter a valid email';
+                    }
                     return null;
                   },
                 ),

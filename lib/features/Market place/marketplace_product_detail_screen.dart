@@ -7,17 +7,43 @@ import 'models/marketplace_product.dart';
 import 'widgets/marketplace_product_gallery_screen.dart';
 
 class MarketplaceProductDetailScreen extends StatefulWidget {
-  const MarketplaceProductDetailScreen({super.key, required this.product, required this.theme, required this.onAddToCart});
+  const MarketplaceProductDetailScreen({
+    super.key,
+    required this.product,
+    required this.theme,
+    required this.cartQuantity,
+    required this.onAddToCart,
+  });
 
   final MarketplaceProduct product;
   final DashboardTheme theme;
-  final ValueChanged<MarketplaceProduct> onAddToCart;
+
+  /// How many of this product are currently in the cart — 0 if none.
+  final int cartQuantity;
+
+  /// Called with the quantity selected on this screen's stepper when the
+  /// shopper taps the add-to-cart button.
+  final void Function(MarketplaceProduct product, int quantity) onAddToCart;
 
   @override
   State<MarketplaceProductDetailScreen> createState() => _MarketplaceProductDetailScreenState();
 }
 
 class _MarketplaceProductDetailScreenState extends State<MarketplaceProductDetailScreen> {
+  late int _quantity = widget.cartQuantity > 0 ? widget.cartQuantity : 1;
+
+  void _decrement() {
+    if (_quantity <= 1) return;
+    setState(() => _quantity--);
+  }
+
+  void _increment() {
+    if (_quantity >= widget.product.stock) return;
+    setState(() => _quantity++);
+  }
+
+  bool get _alreadyInCart => widget.cartQuantity > 0 && _quantity == widget.cartQuantity;
+
   void _openGallery(int index) {
     final images = widget.product.displayImages;
     Navigator.of(context).push(
@@ -116,6 +142,52 @@ class _MarketplaceProductDetailScreenState extends State<MarketplaceProductDetai
                   ),
                   const SizedBox(height: 16),
                   Text(product.priceLabel, style: AppTextStyles.heading(color: theme.foreground, size: 24)),
+                  if (inStock) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Text(
+                          'Quantity',
+                          style: AppTextStyles.body(color: theme.foreground.withValues(alpha: 0.6), size: 13.5, weight: FontWeight.w600),
+                        ),
+                        const SizedBox(width: 16),
+                        Container(
+                          decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(24)),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: _quantity > 1 ? _decrement : null,
+                                icon: Icon(
+                                  Icons.remove_rounded,
+                                  size: 18,
+                                  color: _quantity > 1 ? theme.onSurface.withValues(alpha: 0.8) : theme.onSurface.withValues(alpha: 0.25),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 28,
+                                child: Text(
+                                  '$_quantity',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.body(color: theme.onSurface, size: 15, weight: FontWeight.w700),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _quantity < product.stock ? _increment : null,
+                                icon: Icon(
+                                  Icons.add_rounded,
+                                  size: 18,
+                                  color: _quantity < product.stock
+                                      ? theme.onSurface.withValues(alpha: 0.8)
+                                      : theme.onSurface.withValues(alpha: 0.25),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   Text(
                     'Description',
@@ -130,10 +202,14 @@ class _MarketplaceProductDetailScreenState extends State<MarketplaceProductDetai
                   SizedBox(
                     width: double.infinity,
                     child: PillButton(
-                      label: inStock ? 'Add to Cart' : 'Out of Stock',
-                      backgroundColor: theme.accent,
+                      label: !inStock
+                          ? 'Out of Stock'
+                          : (_alreadyInCart ? 'Already in Cart' : 'Add to Cart'),
+                      backgroundColor: !inStock
+                          ? theme.accent
+                          : (_alreadyInCart ? Colors.green.shade600 : theme.accent),
                       textColor: theme.onAccent,
-                      onPressed: inStock ? () => widget.onAddToCart(product) : null,
+                      onPressed: inStock ? () => widget.onAddToCart(product, _quantity) : null,
                     ),
                   ),
                 ],

@@ -54,12 +54,28 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     }).toList();
   }
 
-  void _addToCart(MarketplaceProduct product) {
+  /// Adds [product] to the cart at exactly [quantity] units — a repeat tap
+  /// with the same quantity already in the cart doesn't silently bump the
+  /// count again; the shopper has to use the product card's +/- stepper to
+  /// actually change how many they want first.
+  void _addToCart(MarketplaceProduct product, int quantity) {
+    if (product.stock <= 0) return;
+    final clampedQuantity = quantity.clamp(1, product.stock);
+    if (_cart[product.id] == clampedQuantity) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item already added to cart')));
+      return;
+    }
     setState(() {
-      _cart.update(product.id, (qty) => qty + 1, ifAbsent: () => 1);
+      _cart[product.id] = clampedQuantity;
       _fulfillment.putIfAbsent(product.id, () => product.fulfillmentOptions.first);
     });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${product.name} added to cart')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          clampedQuantity == 1 ? '${product.name} added to cart' : '$clampedQuantity × ${product.name} added to cart',
+        ),
+      ),
+    );
   }
 
   void _removeFromCart(String productId) {
@@ -67,6 +83,13 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
       _cart.remove(productId);
       _fulfillment.remove(productId);
     });
+  }
+
+  /// Adjusts an item already in the cart via the cart sheet's own stepper —
+  /// clamped between 1 (use the trash icon to remove it entirely) and however
+  /// many the vendor has left in stock.
+  void _setCartQuantity(MarketplaceProduct product, int quantity) {
+    setState(() => _cart[product.id] = quantity.clamp(1, product.stock));
   }
 
   int get _cartTotal => marketplaceCatalog
@@ -113,11 +136,27 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(product.icon, color: theme.onSurface.withValues(alpha: 0.5), size: 22),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: SizedBox(
+                                        width: 44,
+                                        height: 44,
+                                        child: product.displayImages.isNotEmpty
+                                            ? Image(image: product.displayImages.first, fit: BoxFit.cover)
+                                            : DecoratedBox(
+                                                decoration: BoxDecoration(color: theme.onSurface.withValues(alpha: 0.06)),
+                                                child: Icon(
+                                                  product.icon,
+                                                  color: theme.onSurface.withValues(alpha: 0.5),
+                                                  size: 20,
+                                                ),
+                                              ),
+                                      ),
+                                    ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
-                                        '${product.name} x${_cart[product.id]}',
+                                        product.name,
                                         style: AppTextStyles.body(color: theme.onSurface, size: 13.5, weight: FontWeight.w600),
                                       ),
                                     ),
@@ -134,6 +173,65 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                       constraints: const BoxConstraints(),
                                       padding: const EdgeInsets.only(left: 8),
                                       visualDensity: VisualDensity.compact,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const SizedBox(width: 56),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: theme.onSurface.withValues(alpha: 0.06),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            onPressed: (_cart[product.id] ?? 1) > 1
+                                                ? () => setSheetState(
+                                                    () => _setCartQuantity(product, (_cart[product.id] ?? 1) - 1),
+                                                  )
+                                                : null,
+                                            icon: Icon(
+                                              Icons.remove_rounded,
+                                              size: 16,
+                                              color: (_cart[product.id] ?? 1) > 1
+                                                  ? theme.onSurface.withValues(alpha: 0.8)
+                                                  : theme.onSurface.withValues(alpha: 0.25),
+                                            ),
+                                            constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                            padding: EdgeInsets.zero,
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                          SizedBox(
+                                            width: 24,
+                                            child: Text(
+                                              '${_cart[product.id]}',
+                                              textAlign: TextAlign.center,
+                                              style: AppTextStyles.body(color: theme.onSurface, size: 13, weight: FontWeight.w700),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            onPressed: (_cart[product.id] ?? 1) < product.stock
+                                                ? () => setSheetState(
+                                                    () => _setCartQuantity(product, (_cart[product.id] ?? 1) + 1),
+                                                  )
+                                                : null,
+                                            icon: Icon(
+                                              Icons.add_rounded,
+                                              size: 16,
+                                              color: (_cart[product.id] ?? 1) < product.stock
+                                                  ? theme.onSurface.withValues(alpha: 0.8)
+                                                  : theme.onSurface.withValues(alpha: 0.25),
+                                            ),
+                                            constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                            padding: EdgeInsets.zero,
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -412,7 +510,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                           crossAxisCount: gridColumnsForWidth(MediaQuery.of(context).size.width) + 1,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
-                          childAspectRatio: 0.68,
+                          childAspectRatio: 0.58,
                         ),
                         itemCount: _filtered.length,
                         itemBuilder: (context, index) {
@@ -420,12 +518,14 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                           return MarketplaceProductCard(
                             product: product,
                             theme: theme,
-                            onAddToCart: () => _addToCart(product),
+                            cartQuantity: _cart[product.id] ?? 0,
+                            onAddToCart: (quantity) => _addToCart(product, quantity),
                             onOpen: () => Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => MarketplaceProductDetailScreen(
                                   product: product,
                                   theme: theme,
+                                  cartQuantity: _cart[product.id] ?? 0,
                                   onAddToCart: _addToCart,
                                 ),
                               ),

@@ -13,7 +13,7 @@ import '../features/auth/signup_tenant1_screen.dart';
 import '../features/auth/signup_tenant2_screen.dart';
 import '../features/auth/signup_tenant_screen.dart';
 import '../features/auth/verify_otp_screen.dart';
-import '../features/dashboard/landlord_dashboard_screen.dart';
+import '../features/landlord/landlord_dashboard_screen.dart';
 import '../features/dashboard/tenant_dashboard_screen.dart';
 import '../features/onboarding/get_started_screen.dart';
 import '../features/splash/splash_screen.dart';

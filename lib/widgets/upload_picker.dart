@@ -85,4 +85,52 @@ Future<PickedUpload?> pickUpload(BuildContext context) async {
   }
 }
 
+/// Lets the user pick several images at once (from the camera roll or
+/// Files), up to [maxCount]. Used by the marketplace's "List a Product"
+/// form, which needs 2-5 photos rather than one upload at a time.
+Future<List<PickedUpload>> pickMultipleImageUploads(BuildContext context, {required int maxCount}) async {
+  final source = await showModalBottomSheet<_UploadSource>(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.photo_library_rounded, color: AppColors.navy),
+            title: Text('Choose from Camera Roll', style: AppTextStyles.body(color: AppColors.navy)),
+            onTap: () => Navigator.pop(context, _UploadSource.gallery),
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_rounded, color: AppColors.navy),
+            title: Text('Choose from Files', style: AppTextStyles.body(color: AppColors.navy)),
+            onTap: () => Navigator.pop(context, _UploadSource.files),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  switch (source) {
+    case _UploadSource.gallery:
+      final picked = await ImagePicker().pickMultiImage(imageQuality: 85, limit: maxCount);
+      return picked.map((f) => PickedUpload(path: f.path, fileName: f.name, isImage: true)).toList();
+    case _UploadSource.files:
+      final result = await FilePicker.pickFiles(withData: true, allowMultiple: true);
+      final files = (result?.files ?? const []).take(maxCount);
+      return files.map((file) {
+        final extension = (file.extension ?? '').toLowerCase();
+        return PickedUpload(
+          path: file.path ?? file.name,
+          fileName: file.name,
+          isImage: _imageExtensions.contains(extension),
+          bytes: file.bytes,
+        );
+      }).toList();
+    case null:
+      return const [];
+  }
+}
+
 enum _UploadSource { gallery, files }

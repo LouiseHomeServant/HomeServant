@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import '../../core/responsive.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/thousands_separator.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
+import '../Market place/marketplace_auth_screen.dart';
 import 'messages_screen.dart';
 import 'models/property.dart';
 import 'notifications_screen.dart';
@@ -22,26 +24,6 @@ class TenantDashboardScreen extends StatefulWidget {
 }
 
 enum _PriceSort { none, lowToHigh, highToLow }
-
-String _formatWithThousandsSeparator(num value) {
-  final digits = value.round().toString();
-  final buffer = StringBuffer();
-  for (var i = 0; i < digits.length; i++) {
-    if (i != 0 && (digits.length - i) % 3 == 0) buffer.write(',');
-    buffer.write(digits[i]);
-  }
-  return buffer.toString();
-}
-
-class _ThousandsSeparatorInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final digitsOnly = newValue.text.replaceAll(',', '');
-    if (digitsOnly.isEmpty) return newValue.copyWith(text: '');
-    final formatted = _formatWithThousandsSeparator(int.parse(digitsOnly));
-    return TextEditingValue(text: formatted, selection: TextSelection.collapsed(offset: formatted.length));
-  }
-}
 
 class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
   static const _categories = ['House', 'Shortlet', 'Self-Con', 'Apartment'];
@@ -116,8 +98,8 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
     var priceSort = _priceSort;
     var selectedState = _selectedState;
     final locationController = TextEditingController(text: _locationQuery);
-    final minPriceController = TextEditingController(text: _formatWithThousandsSeparator(priceRange.start));
-    final maxPriceController = TextEditingController(text: _formatWithThousandsSeparator(priceRange.end));
+    final minPriceController = TextEditingController(text: formatWithThousandsSeparator(priceRange.start));
+    final maxPriceController = TextEditingController(text: formatWithThousandsSeparator(priceRange.end));
 
     await showModalBottomSheet<void>(
       context: context,
@@ -152,7 +134,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                           child: TextField(
                             controller: minPriceController,
                             keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsSeparatorInputFormatter()],
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, ThousandsSeparatorInputFormatter()],
                             style: AppTextStyles.body(color: theme.onSurface),
                             decoration: InputDecoration(
                               prefixText: '₦ ',
@@ -176,7 +158,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                           child: TextField(
                             controller: maxPriceController,
                             keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsSeparatorInputFormatter()],
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, ThousandsSeparatorInputFormatter()],
                             style: AppTextStyles.body(color: theme.onSurface),
                             decoration: InputDecoration(
                               prefixText: '₦ ',
@@ -210,8 +192,8 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                         onChanged:
                             (values) => setSheetState(() {
                               priceRange = values;
-                              minPriceController.text = _formatWithThousandsSeparator(values.start);
-                              maxPriceController.text = _formatWithThousandsSeparator(values.end);
+                              minPriceController.text = formatWithThousandsSeparator(values.start);
+                              maxPriceController.text = formatWithThousandsSeparator(values.end);
                             }),
                       )
                     else
@@ -336,6 +318,14 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
     maxPriceController.dispose();
   }
 
+  void _onNavTap(int index, DashboardTheme theme) {
+    if (index == 1) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => MarketplaceAuthScreen(theme: theme)));
+      return;
+    }
+    setState(() => _navIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<AppState>().dashboardTheme;
@@ -358,7 +348,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
                   constraints: const BoxConstraints(maxWidth: 420),
                   child: DashboardBottomNav(
                     currentIndex: _navIndex,
-                    onTap: (i) => setState(() => _navIndex = i),
+                    onTap: (i) => _onNavTap(i, theme),
                     theme: theme,
                   ),
                 ),

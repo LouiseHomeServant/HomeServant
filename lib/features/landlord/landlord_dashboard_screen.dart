@@ -3,13 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../models/dashboard_theme.dart';
 import '../../models/user_role.dart';
 import '../../state/app_state.dart';
 import '../../widgets/home_servant_logo.dart';
-import 'models/property.dart';
-import 'profile_screen.dart';
-import 'widgets/bottom_nav.dart';
-import 'widgets/property_image.dart';
+import '../Market place/marketplace_auth_screen.dart';
+import '../dashboard/models/property.dart';
+import '../dashboard/profile_screen.dart';
+import '../dashboard/widgets/bottom_nav.dart';
+import '../dashboard/widgets/property_image.dart';
 
 class LandlordDashboardScreen extends StatefulWidget {
   const LandlordDashboardScreen({super.key});
@@ -21,6 +23,14 @@ class LandlordDashboardScreen extends StatefulWidget {
 
 class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
   int _navIndex = 0;
+
+  void _onNavTap(int index, DashboardTheme theme) {
+    if (index == 1) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => MarketplaceAuthScreen(theme: theme)));
+      return;
+    }
+    setState(() => _navIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +155,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
                   constraints: const BoxConstraints(maxWidth: 420),
                   child: DashboardBottomNav(
                     currentIndex: _navIndex,
-                    onTap: (i) => setState(() => _navIndex = i),
+                    onTap: (i) => _onNavTap(i, theme),
                     theme: theme,
                   ),
                 ),

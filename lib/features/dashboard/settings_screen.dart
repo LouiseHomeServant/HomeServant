@@ -6,9 +6,9 @@ import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
 import '../../widgets/app_lock_pin_sheet.dart';
+import '../../widgets/support_sheet.dart';
 import '../auth/verify_otp_screen.dart';
 import 'privacy&terms_screen.dart';
-import 'messages_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.theme, required this.onAccountClosed});
@@ -131,10 +131,7 @@ class SettingsScreen extends StatelessWidget {
                     theme: theme,
                     icon: Icons.support_agent_rounded,
                     label: 'Help & Support',
-                    onTap:
-                        () => Navigator.of(
-                          context,
-                        ).push(MaterialPageRoute(builder: (_) => MessagesScreen(theme: theme))),
+                    onTap: () => showSupportOptionsSheet(context, theme: theme),
                   ),
                   _NavRow(
                     theme: theme,

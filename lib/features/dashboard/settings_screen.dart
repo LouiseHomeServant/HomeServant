@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/responsive.dart';
@@ -57,16 +58,21 @@ class SettingsScreen extends StatelessWidget {
                     subtitle: 'Require a one-time code by email at login',
                     value: appState.twoFactorEnabled,
                     onChanged: (value) => _onToggleTwoFactor(context, appState, value),
+                    // App Lock (below) doesn't exist on web — there's no
+                    // device to reopen a PIN gate on — so this is the last
+                    // row there and shouldn't draw a trailing divider.
+                    showDivider: !kIsWeb,
                   ),
-                  _SwitchRow(
-                    theme: theme,
-                    icon: Icons.pin_outlined,
-                    label: 'App Lock',
-                    subtitle: 'Require a PIN whenever the app reopens',
-                    value: appState.appLockEnabled,
-                    onChanged: (value) => _onToggleAppLock(context, appState, value),
-                    showDivider: false,
-                  ),
+                  if (!kIsWeb)
+                    _SwitchRow(
+                      theme: theme,
+                      icon: Icons.pin_outlined,
+                      label: 'App Lock',
+                      subtitle: 'Require a PIN whenever the app reopens',
+                      value: appState.appLockEnabled,
+                      onChanged: (value) => _onToggleAppLock(context, appState, value),
+                      showDivider: false,
+                    ),
                 ],
               ),
               if (appState.role == UserRole.landlord) ...[

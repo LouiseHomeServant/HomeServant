@@ -68,7 +68,12 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
               query.isEmpty ||
               property.title.toLowerCase().contains(query) ||
               property.location.toLowerCase().contains(query);
-          final matchesCategory = property.category == selectedCategory;
+          // A typed search looks across every category — restricting to the
+          // active tab on top of it hid real matches (e.g. searching
+          // "Lekki" found nothing while the House tab was selected, even
+          // though a Shortlet in Lekki exists) and made the search box look
+          // broken. With no query, the category tabs filter as normal.
+          final matchesCategory = query.isNotEmpty || property.category == selectedCategory;
           final matchesState = _selectedState == null || property.state == _selectedState;
           final matchesLocation = locationQuery.isEmpty || property.location.toLowerCase().contains(locationQuery);
           final matchesMinPrice = _minPrice == null || property.price >= _minPrice!;

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
@@ -9,6 +10,10 @@ import 'app_lock_screen.dart';
 /// this launch started (turning it on mid-session doesn't itself re-lock
 /// the app you're already in — only the next background/resume or restart
 /// does).
+///
+/// Disabled entirely on web ([kIsWeb]): there's no real backgrounding to
+/// guard against in a browser tab, and a PIN gate in front of a page anyone
+/// can just refresh past isn't meaningful security.
 class AppLockGate extends StatefulWidget {
   const AppLockGate({super.key, required this.child});
 
@@ -54,6 +59,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) return widget.child;
     final appState = context.watch<AppState>();
     if (!_checkedInitialLockState && appState.isLoaded) {
       _checkedInitialLockState = true;

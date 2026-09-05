@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -40,9 +41,13 @@ void _proceedAfterLogin(BuildContext context) {
 /// to the dashboard unless App Lock is on — in which case the PIN gate is
 /// interposed first, so a device-level lock can't be skipped just because
 /// this login flow is mocked (there's no real backend to gate on).
+///
+/// App Lock doesn't apply on web ([kIsWeb]) — see [AppLockGate] — so this
+/// always goes straight to the dashboard there, even if the setting is on
+/// from another platform's session.
 void _proceedPastTwoFactor(BuildContext context) {
   final appState = context.read<AppState>();
-  if (appState.appLockEnabled && appState.appLockPin != null) {
+  if (!kIsWeb && appState.appLockEnabled && appState.appLockPin != null) {
     context.go('/app-lock-verify');
   } else {
     context.go('/dashboard');

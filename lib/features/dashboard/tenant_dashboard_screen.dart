@@ -8,7 +8,6 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/thousands_separator.dart';
 import '../../models/dashboard_theme.dart';
 import '../../state/app_state.dart';
-import '../Market place/marketplace_auth_screen.dart';
 import 'messages_screen.dart';
 import 'models/property.dart';
 import 'notifications_screen.dart';
@@ -320,7 +319,7 @@ class _TenantDashboardScreenState extends State<TenantDashboardScreen> {
 
   void _onNavTap(int index, DashboardTheme theme) {
     if (index == 1) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => MarketplaceAuthScreen(theme: theme)));
+      context.push('/marketplace');
       return;
     }
     setState(() => _navIndex = index);

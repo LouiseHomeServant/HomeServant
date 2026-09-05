@@ -7,7 +7,6 @@ import '../../models/dashboard_theme.dart';
 import '../../models/user_role.dart';
 import '../../state/app_state.dart';
 import '../../widgets/home_servant_logo.dart';
-import '../Market place/marketplace_auth_screen.dart';
 import '../dashboard/models/property.dart';
 import '../dashboard/profile_screen.dart';
 import '../dashboard/widgets/bottom_nav.dart';
@@ -26,7 +25,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
 
   void _onNavTap(int index, DashboardTheme theme) {
     if (index == 1) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => MarketplaceAuthScreen(theme: theme)));
+      context.push('/marketplace');
       return;
     }
     setState(() => _navIndex = index);

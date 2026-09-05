@@ -46,10 +46,14 @@ class VendorSignupSuccessScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 36),
                   PillButton(
-                    label: 'Back to Marketplace',
+                    label: 'Back to Dashboard',
                     backgroundColor: theme.accent,
                     textColor: theme.onAccent,
-                    onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                    // Pops the whole Marketplace flow (which lives in its own
+                    // nested Navigator — see MarketplaceNavigatorHost) off the
+                    // root Navigator, landing back on the dashboard rather
+                    // than the Marketplace intro screen.
+                    onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
                   ),
                 ],
               ),

@@ -15,6 +15,7 @@ import '../features/auth/signup_tenant_screen.dart';
 import '../features/auth/verify_otp_screen.dart';
 import '../features/landlord/landlord_dashboard_screen.dart';
 import '../features/dashboard/tenant_dashboard_screen.dart';
+import '../features/Market place/marketplace_navigator_host.dart';
 import '../features/onboarding/get_started_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../models/user_role.dart';
@@ -209,6 +210,21 @@ GoRouter buildAppRouter() {
         builder: (context, state) {
           final role = context.watch<AppState>().role;
           return role.isLandlord ? const LandlordDashboardScreen() : const TenantDashboardScreen();
+        },
+      ),
+      GoRoute(
+        // A real go_router route (rather than a bare Navigator.push from the
+        // dashboard) so entering the Marketplace adds its own browser
+        // history entry. Without this, none of the Marketplace's internal
+        // navigation (all imperative Navigator.push, for screens as varied
+        // as vendor onboarding and chat threads) ever touched the URL, so
+        // pressing the browser's back button while inside it fell through
+        // to whatever URL preceded '/dashboard' — typically the login
+        // screen — instead of landing back on the dashboard.
+        path: '/marketplace',
+        builder: (context, state) {
+          final theme = context.watch<AppState>().dashboardTheme;
+          return MarketplaceNavigatorHost(theme: theme);
         },
       ),
     ],

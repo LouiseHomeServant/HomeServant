@@ -160,7 +160,7 @@ final List<MarketplaceOrder> customerOrders = [
   MarketplaceOrder(
     id: 'mo4',
     date: DateTime.now().subtract(const Duration(days: 12)),
-    paymentMethod: PaymentMethod.payOnDelivery,
+    paymentMethod: PaymentMethod.bankTransfer,
     customerName: 'Halima Yusuf',
     customerPhone: '0906 442 7710',
     customerAddress: '21 Awolowo Way, Ikeja, Lagos',

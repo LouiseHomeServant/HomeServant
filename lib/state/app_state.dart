@@ -120,6 +120,18 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // --- Landlord: tenant messaging -----------------------------------------
+  /// Whether tenants can message this landlord — and, from there, book a
+  /// property inspection. Landlord-only setting; when off, a tenant's
+  /// property detail screen hides "Message Landlord" entirely, leaving rent
+  /// payment as the only way forward.
+  bool landlordMessagesEnabled = true;
+
+  void setLandlordMessagesEnabled(bool value) {
+    landlordMessagesEnabled = value;
+    notifyListeners();
+  }
+
   // --- Security: app lock --------------------------------------------------
   bool appLockEnabled = false;
   String? appLockPin;
@@ -230,6 +242,7 @@ class AppState extends ChangeNotifier {
     twoFactorEnabled = false;
     appLockEnabled = false;
     appLockPin = null;
+    landlordMessagesEnabled = true;
     dashboardTheme = DashboardTheme.classic;
     notifyListeners();
     AppIconService.apply(dashboardTheme);
@@ -270,6 +283,7 @@ class AppState extends ChangeNotifier {
     'twoFactorEnabled': twoFactorEnabled,
     'appLockEnabled': appLockEnabled,
     'appLockPin': appLockPin,
+    'landlordMessagesEnabled': landlordMessagesEnabled,
   };
 
   void _fromJson(Map<String, dynamic> json) {
@@ -307,6 +321,7 @@ class AppState extends ChangeNotifier {
     twoFactorEnabled = json['twoFactorEnabled'] as bool? ?? false;
     appLockEnabled = json['appLockEnabled'] as bool? ?? false;
     appLockPin = json['appLockPin'] as String?;
+    landlordMessagesEnabled = json['landlordMessagesEnabled'] as bool? ?? true;
   }
 
   Future<void> _save() async {

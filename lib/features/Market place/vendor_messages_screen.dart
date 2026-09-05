@@ -9,14 +9,40 @@ import 'models/vendor.dart';
 /// The vendor's conversations with customers — one per pickup order, since
 /// that's the only case a vendor needs to coordinate with a customer in
 /// this prototype. Reached from the vendor dashboard's app bar.
-class VendorMessagesScreen extends StatelessWidget {
+class VendorMessagesScreen extends StatefulWidget {
   const VendorMessagesScreen({super.key, required this.theme});
 
   final DashboardTheme theme;
 
+  @override
+  State<VendorMessagesScreen> createState() => _VendorMessagesScreenState();
+}
+
+class _VendorMessagesScreenState extends State<VendorMessagesScreen> {
+  DashboardTheme get theme => widget.theme;
+
   List<VendorOrderEntry> get _pickupOrders => vendorOrderEntries(
     mockLoggedInVendor.businessName,
   ).where((e) => e.item.fulfillment == FulfillmentMethod.pickup).toList();
+
+  Future<void> _openChat(VendorOrderEntry entry) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChatThreadScreen(
+          theme: theme,
+          contactName: entry.order.customerName,
+          orderEntry: entry,
+          initialMessages: [
+            ChatMessage(
+              text: 'Hi, when would be a good time for me to pick up the ${entry.item.productName}?',
+              fromMe: false,
+            ),
+          ],
+        ),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,20 +74,7 @@ class VendorMessagesScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final entry = orders[index];
                   return GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ChatThreadScreen(
-                          theme: theme,
-                          contactName: entry.order.customerName,
-                          initialMessages: [
-                            ChatMessage(
-                              text: 'Hi, when would be a good time for me to pick up the ${entry.item.productName}?',
-                              fromMe: false,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    onTap: () => _openChat(entry),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(18)),

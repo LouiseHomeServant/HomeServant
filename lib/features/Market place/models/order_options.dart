@@ -15,19 +15,16 @@ enum FulfillmentMethod {
 /// vendor's order detail screen, which shows what was actually used.
 enum PaymentMethod {
   card,
-  bankTransfer,
-  payOnDelivery;
+  bankTransfer;
 
   String get label => switch (this) {
     PaymentMethod.card => 'Debit/Credit Card',
     PaymentMethod.bankTransfer => 'Bank Transfer',
-    PaymentMethod.payOnDelivery => 'Pay on Delivery',
   };
 
   IconData get icon => switch (this) {
     PaymentMethod.card => Icons.credit_card_rounded,
     PaymentMethod.bankTransfer => Icons.account_balance_outlined,
-    PaymentMethod.payOnDelivery => Icons.payments_outlined,
   };
 }
 

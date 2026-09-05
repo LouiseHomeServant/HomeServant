@@ -5,6 +5,7 @@ import '../dashboard/chat_thread_screen.dart';
 import '../dashboard/models/property.dart';
 import '../../models/dashboard_theme.dart';
 import 'models/marketplace_order.dart';
+import 'widgets/order_item_thumbnail.dart';
 
 /// Every order a customer has placed on the Marketplace, newest first.
 /// Reached from the cart/receipt icon on [MarketplaceHomeScreen]. Lets a
@@ -166,7 +167,7 @@ class _OrderItemRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(item.icon, color: theme.foreground.withValues(alpha: 0.5), size: 20),
+          OrderItemThumbnail(item: item, iconColor: theme.foreground.withValues(alpha: 0.5), size: 40),
           const SizedBox(width: 10),
           Expanded(
             child: Column(

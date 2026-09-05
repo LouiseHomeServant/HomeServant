@@ -5,6 +5,7 @@ import '../dashboard/chat_thread_screen.dart';
 import '../dashboard/models/property.dart';
 import 'models/marketplace_order.dart';
 import 'models/order_options.dart';
+import 'widgets/order_item_thumbnail.dart';
 
 /// Full detail on one item a vendor sold — reached from either the
 /// Notifications or Transaction History screen, so both stay a thin list
@@ -76,14 +77,12 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
               decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(18)),
               child: Row(
                 children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: theme.accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(item.icon, color: theme.accent, size: 24),
+                  OrderItemThumbnail(
+                    item: item,
+                    iconColor: theme.accent,
+                    backgroundColor: theme.accent.withValues(alpha: 0.12),
+                    size: 52,
+                    borderRadius: 14,
                   ),
                   const SizedBox(width: 14),
                   Expanded(

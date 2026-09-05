@@ -39,6 +39,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
             (_) => ChatThreadScreen(
               theme: widget.theme,
               contactName: property.landlordName,
+              property: property,
               initialMessages: [
                 ChatMessage(
                   text: "Hi, I'm interested in ${property.title} in ${property.location}. Is it still available?",
@@ -55,6 +56,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     final property = widget.property;
     final theme = widget.theme;
     final favorited = context.select<AppState, bool>((state) => state.isFavorite(property.id));
+    final messagingEnabled = context.select<AppState, bool>((state) => state.landlordMessagesEnabled);
     return Scaffold(
       backgroundColor: theme.background,
       body: SafeArea(
@@ -209,28 +211,38 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 18),
-                                side: BorderSide(color: theme.accent, width: 1.4),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          if (messagingEnabled)
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 18),
+                                  side: BorderSide(color: theme.accent, width: 1.4),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                ),
+                                onPressed: _messageLandlord,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.chat_bubble_outline_rounded, color: theme.accent, size: 18),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      property.category == 'Shortlet' ? 'Message Owner' : 'Message Landlord',
+                                      style: AppTextStyles.button(color: theme.accent, size: 15),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              onPressed: _messageLandlord,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.chat_bubble_outline_rounded, color: theme.accent, size: 18),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    property.category == 'Shortlet' ? 'Message Owner' : 'Message Landlord',
-                                    style: AppTextStyles.button(color: theme.accent, size: 15),
-                                  ),
-                                ],
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                'This landlord accepts direct rent payments only — messaging is turned off.',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.body(color: theme.foreground.withValues(alpha: 0.5), size: 12.5),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),

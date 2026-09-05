@@ -4,6 +4,7 @@ import '../../core/responsive.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
+import '../../models/user_role.dart';
 import '../../state/app_state.dart';
 import '../../widgets/app_lock_pin_sheet.dart';
 import '../../widgets/support_sheet.dart';
@@ -68,6 +69,24 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              if (appState.role == UserRole.landlord) ...[
+                const SizedBox(height: 24),
+                _SectionHeader(theme: theme, label: 'Tenant Messaging'),
+                _SettingsCard(
+                  theme: theme,
+                  children: [
+                    _SwitchRow(
+                      theme: theme,
+                      icon: Icons.chat_bubble_outline_rounded,
+                      label: 'Allow Tenant Messages',
+                      subtitle: 'Off means tenants pay rent directly — no messaging or inspection booking',
+                      value: appState.landlordMessagesEnabled,
+                      onChanged: appState.setLandlordMessagesEnabled,
+                      showDivider: false,
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 24),
               _SectionHeader(theme: theme, label: 'Notifications'),
               _SettingsCard(

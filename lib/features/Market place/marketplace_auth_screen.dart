@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/responsive.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/dashboard_theme.dart';
@@ -88,15 +89,14 @@ class MarketplaceAuthScreen extends StatelessWidget {
                 ),
               ),
             ),
-            if (Navigator.of(context).canPop())
-              Positioned(
-                top: 4,
-                left: 8,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.foreground, size: 20),
-                ),
+            Positioned(
+              top: 4,
+              left: 8,
+              child: IconButton(
+                onPressed: () => context.pop(),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.foreground, size: 20),
               ),
+            ),
           ],
         ),
       ),

@@ -25,6 +25,15 @@ class _VendorMessagesScreenState extends State<VendorMessagesScreen> {
     mockLoggedInVendor.businessName,
   ).where((e) => e.item.fulfillment == FulfillmentMethod.pickup).toList();
 
+  List<VendorOrderEntry> get _activeOrders =>
+      _pickupOrders.where((e) => e.item.status == OrderItemStatus.pending).toList();
+
+  /// Completed and cancelled orders, grouped into their own section below the
+  /// active ones and sorted so completed orders lead ahead of cancelled ones.
+  List<VendorOrderEntry> get _pastOrders =>
+      _pickupOrders.where((e) => e.item.status != OrderItemStatus.pending).toList()
+        ..sort((a, b) => a.item.status.index.compareTo(b.item.status.index));
+
   Future<void> _openChat(VendorOrderEntry entry) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -46,7 +55,8 @@ class _VendorMessagesScreenState extends State<VendorMessagesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final orders = _pickupOrders;
+    final activeOrders = _activeOrders;
+    final pastOrders = _pastOrders;
     return Scaffold(
       backgroundColor: theme.background,
       appBar: AppBar(
@@ -56,7 +66,7 @@ class _VendorMessagesScreenState extends State<VendorMessagesScreen> {
         title: Text('Messages', style: AppTextStyles.heading(color: theme.foreground, size: 18)),
       ),
       body: SafeArea(
-        child: orders.isEmpty
+        child: activeOrders.isEmpty && pastOrders.isEmpty
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -67,50 +77,92 @@ class _VendorMessagesScreenState extends State<VendorMessagesScreen> {
                   ),
                 ),
               )
-            : ListView.separated(
+            : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                itemCount: orders.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final entry = orders[index];
-                  return GestureDetector(
-                    onTap: () => _openChat(entry),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(18)),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: theme.accent.withValues(alpha: 0.25),
-                            child: Icon(Icons.person, color: theme.accent),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  entry.order.customerName,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.body(color: theme.onSurface, size: 14, weight: FontWeight.w700),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  entry.item.productName,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.body(color: theme.onSurface.withValues(alpha: 0.6), size: 12.5),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(Icons.chevron_right_rounded, color: theme.onSurface.withValues(alpha: 0.3)),
-                        ],
+                children: [
+                  ...activeOrders.map(
+                    (entry) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _MessageRow(theme: theme, entry: entry, onTap: () => _openChat(entry)),
+                    ),
+                  ),
+                  if (pastOrders.isNotEmpty) ...[
+                    Padding(
+                      padding: EdgeInsets.only(top: activeOrders.isEmpty ? 0 : 16, bottom: 8),
+                      child: Text('Completed & Cancelled', style: AppTextStyles.heading(color: theme.foreground, size: 15)),
+                    ),
+                    ...pastOrders.map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _MessageRow(theme: theme, entry: entry, onTap: () => _openChat(entry), showStatus: true),
                       ),
                     ),
-                  );
-                },
+                  ],
+                ],
               ),
+      ),
+    );
+  }
+}
+
+class _MessageRow extends StatelessWidget {
+  const _MessageRow({required this.theme, required this.entry, required this.onTap, this.showStatus = false});
+
+  final DashboardTheme theme;
+  final VendorOrderEntry entry;
+  final VoidCallback onTap;
+  final bool showStatus;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(18)),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: theme.accent.withValues(alpha: 0.25),
+              child: Icon(Icons.person, color: theme.accent),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.order.customerName,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body(color: theme.onSurface, size: 14, weight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    entry.item.productName,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body(color: theme.onSurface.withValues(alpha: 0.6), size: 12.5),
+                  ),
+                ],
+              ),
+            ),
+            if (showStatus) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: entry.item.status.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  entry.item.status.label,
+                  style: AppTextStyles.body(color: entry.item.status.color, size: 10.5, weight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Icon(Icons.chevron_right_rounded, color: theme.onSurface.withValues(alpha: 0.3)),
+          ],
+        ),
       ),
     );
   }

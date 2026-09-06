@@ -19,6 +19,7 @@ import '../features/dashboard/tenant_dashboard_screen.dart';
 import '../features/Market place/marketplace_navigator_host.dart';
 import '../features/onboarding/get_started_screen.dart';
 import '../features/splash/splash_screen.dart';
+import '../features/splash/web_landing_screen.dart';
 import '../models/user_role.dart';
 import '../state/app_state.dart';
 import '../widgets/app_lock_screen.dart';
@@ -60,9 +61,24 @@ GoRouter buildAppRouter() {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => SplashScreen(
-          onExplore: () => context.push('/get-started'),
-        ),
+        builder: (context, state) => kIsWeb
+            ? WebLandingScreen(
+                // "Get Started" on the marketing site goes straight to
+                // role-selection sign-up, skipping the Login/Sign Up choice
+                // screen — a visitor landing here has already decided they
+                // want to sign up.
+                onGetStarted: () => context.push('/signup'),
+                onLogin: () => context.push('/login'),
+                // Landlords who want to list before full launch skip the
+                // role-choice screen entirely and land straight on landlord
+                // sign-up, matching the shortcut '/login' and '/signup' take
+                // once a role is already known.
+                onGetOnboarded: () {
+                  context.read<AppState>().selectRole(UserRole.landlord);
+                  context.push('/signup-landlord');
+                },
+              )
+            : SplashScreen(onExplore: () => context.push('/get-started')),
       ),
       GoRoute(
         path: '/get-started',

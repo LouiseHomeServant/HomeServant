@@ -49,7 +49,7 @@ Home Servant is a property-rental app with a bundled goods marketplace, built fo
 
 `lib/routes/app_router.dart` defines the following `GoRoute`s, all on one flat list (no nested routers):
 
-- **`/`** — `SplashScreen`. Shows a Ken-Burns-animated background photo (with an optional looping video overlay once it loads) and an **EXPLORE** button → pushes `/get-started`.
+- **`/`** — branches on `kIsWeb`. Native platforms get `SplashScreen`: a Ken-Burns-animated background photo (with an optional looping video overlay once it loads) and an **EXPLORE** button → pushes `/get-started`. The web build instead gets `WebLandingScreen` — a full marketing site, not a single screen (see [Web Landing Page](#3a-web-landing-page) below). Its **Get Started** goes straight to `/signup` (skipping `/get-started`'s Login/Sign Up choice, since a marketing-site visitor has already decided to sign up) and its **Get Onboarded** goes straight to `/signup-landlord` with the role pre-set.
 - **`/get-started`** — `GetStartedScreen` ("Get Started with Home Servant"). Two buttons: **Login** → pushes `/login`; **Sign Up** → pushes `/signup`.
 - **`/login`** — `LoginScreen` ("Welcome Back — Tell us which side of Home Servant you're on."). Two buttons: **Login as a Tenant** and **Login as a Landlord**. Either sets the chosen role on `AppState` and pushes `/login-tenant` or `/login-landlord`.
 - **`/login-tenant`** — `LoginTenantScreen`. Username/Password fields + **Login** button → runs `_proceedAfterLogin`. A "Don't have an account? Sign Up" link pushes `/signup`.
@@ -71,8 +71,10 @@ Home Servant is a property-rental app with a bundled goods marketplace, built fo
 **Everything below `/dashboard`** — property detail/gallery, wishlist, messages, notifications, profile, settings, history, legal docs, the entire Marketplace (customer and vendor sides, once inside it) — is reached by `Navigator.of(context).push(MaterialPageRoute(...))` calls, not by further go_router routes.
 
 ```text
-/  (Splash)
- └─ EXPLORE → /get-started
+/  (Splash on native; WebLandingScreen on web — see 3a)
+ └─ EXPLORE → /get-started      (native)
+ └─ Get Started → /signup       (web, skips the Login/Sign Up choice)
+ └─ Get Onboarded → /signup-landlord, role pre-set to landlord (web only)
      ├─ Login → /login → role choice → /login-tenant | /login-landlord
      │     └─ Login → [2FA?] → [App Lock?] → /dashboard
      └─ Sign Up → /signup → role choice → /signup-tenant | /signup-landlord
@@ -95,7 +97,19 @@ Home Servant is a property-rental app with a bundled goods marketplace, built fo
 ## 3. Onboarding & Authentication
 
 ### Splash Screen (`lib/features/splash/splash_screen.dart`)
-Full-bleed background photo (`homepage.jpg`) with a subtle Ken-Burns zoom/pan animation, a gradient overlay, the Home Servant logo, the tagline "Find Your Perfect House Just one Click Away", and an **EXPLORE** button. On non-web platforms it also tries to load and play a looping background video (`assets/videos/splash_bg.mp4`), falling back silently to the still photo if it fails to load within 8 seconds. EXPLORE pushes `/get-started`.
+Full-bleed background photo (`homepage.jpg`) with a subtle Ken-Burns zoom/pan animation, a gradient overlay, the Home Servant logo, the tagline "Find Your Perfect House Just one Click Away", and an **EXPLORE** button. On non-web platforms it also tries to load and play a looping background video (`assets/videos/splash_bg.mp4`), falling back silently to the still photo if it fails to load within 8 seconds. EXPLORE pushes `/get-started`. **Not used on web** — see below.
+
+### 3a. Web Landing Page (`lib/features/splash/web_landing_screen.dart`)
+The `/` route's web-only counterpart to the native splash: a scrolling, multi-section marketing site (`WebLandingScreen`, a `StatefulWidget` holding a `ScrollController` for a pinned nav bar and `GlobalKey`s the nav/footer use to smooth-scroll to sections), styled around a premium/minimal brief — one hero photo, flat section-color blocks (no dividers or decorative shapes between them), and the app's three brand colours (navy, gold, sand) used deliberately per section rather than repeated everywhere. Responsive at the `Breakpoints.medium` (700px) cutover used elsewhere in the app. Sections, top to bottom:
+
+- **Nav bar** — pinned `SliverAppBar`, always navy (so it reads as one continuous block with the equally-navy hero right below it), gaining a drop shadow once the page scrolls past 8px to separate it from lighter content. Shows the `logo6.png` lockup (icon + wordmark baked into one image — no separate "Home Servant" `Text` widget is layered on top), nav links that smooth-scroll to `About Us` / `What We're Building`, a `Login` link, and a compact **Get Started** button.
+- **Hero** — full-bleed `homepage.jpg` (780px tall on desktop, 640px on mobile) under a flat navy tint (`AppColors.navyDark` at 60% alpha — deliberately not a multi-stop gradient), centered headline ("House hunting in Nigeria, finally done right." — the second line in gold), one line of supporting copy, **Get Started** / **Log In** buttons, and a scroll-cue chevron that smooth-scrolls to About Us.
+- **About Us** — `AppColors.offWhite` background; mission copy in `AppColors.hintGrey` (the palette's dedicated muted-body-text colour, used here instead of an ad hoc alpha-blended navy); a flat, editorial 3-column "01/02/03" numbered list (Browse Verified Listings, Message Landlords Directly, Shop the Marketplace) separated by whitespace rather than divider lines.
+- **What We're Building** — `AppColors.navyDark` background; "COMING SOON" eyebrow; the pitch that the full native app "is going to change house hunting in Nigeria forever"; a 5-item checklist of upcoming features; and a card offering **Google Play** / **App Store** download buttons (styled like real store badges) — since neither app listing exists yet, tapping either shows a "we'll let you know" `SnackBar` instead of opening a URL. A **Log In** link underneath lets visitors keep using the current web preview instead of waiting.
+- **Get Onboarded Early** (`_GetOnboardedSection`) — a landlord-specific banner on `AppColors.landlordSand`, using `AppColors.landlordText` for its copy (the palette's designated text colour for that exact background) and `AppColors.landlordBrown` for its eyebrow. Pitches listing a property before full launch for priority placement once it goes live; its **List Your Property** button (`_BtnVariant.dark` — navy fill, white text) sets the role to landlord and pushes `/signup-landlord` directly, skipping the role-choice screen.
+- **Footer** — navy; brand block (logo, tagline, three social icon buttons) beside a Quick Links column (About Us / What We're Building / For Landlords, all functional — the first two smooth-scroll, the third triggers the same landlord shortcut as the CTA above); a hairline divider; copyright. The social buttons render the *actual* Instagram, Threads and X logos (inline SVG path data for each, tinted white via `ColorFilter`) rather than generic stand-in icons — since no real Home Servant social accounts exist yet, tapping one shows an acknowledgement `SnackBar` instead of opening a (necessarily guessed) profile URL.
+
+A shared `_LandingButton` (three variants: gold-filled `primary`, translucent-bordered `outline` for navy backgrounds, and navy-filled `dark` for light backgrounds) is the only button component this page uses, so every CTA across the nav, hero, and every section is consistently sized rather than each section inventing its own.
 
 ### Get Started (`lib/features/onboarding/get_started_screen.dart`)
 Title "Get Started with Home Servant", subtitle "Find your dream home or manage your properties with ease." Two buttons: **Login** and **Sign Up** (plus a back arrow if there's a page to pop to).

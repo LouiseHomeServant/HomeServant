@@ -359,10 +359,7 @@ class _NavLink extends StatelessWidget {
   }
 }
 
-/// A full-bleed, restrained hero — one real photo, a flat tint (not a busy
-/// multi-stop gradient), centered type, two buttons. Nothing floating,
-/// nothing tilted: on a premium/minimal brief, the photo and the type are
-/// the whole design, not a backdrop for extra ornament.
+
 class _HeroSection extends StatelessWidget {
   const _HeroSection({required this.isWide, required this.onGetStarted, required this.onLogin, required this.onScrollCue});
 

@@ -28,26 +28,6 @@ class WebLandingScreen extends StatefulWidget {
 class _WebLandingScreenState extends State<WebLandingScreen> {
   final _aboutKey = GlobalKey();
   final _buildingKey = GlobalKey();
-  final _scrollController = ScrollController();
-  bool _scrolled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    final scrolled = _scrollController.offset > 8;
-    if (scrolled != _scrolled) setState(() => _scrolled = scrolled);
-  }
 
   void _scrollTo(GlobalKey key) {
     final context = key.currentContext;
@@ -58,13 +38,10 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width >= Breakpoints.medium;
-    // Desktop keeps the navy bar (seamless against the equally-navy hero
-    // directly beneath it). Mobile switches to white with the hamburger
-    // menu — a solid navy or white bar both read fine sitting on top of the
-    // hero photo, but white needs its own separation shadow since it can't
-    // rely on the "same colour as what's under it" trick to hide the seam.
-    final navBackground = isWide ? AppColors.navy : AppColors.white;
-    final showNavShadow = isWide ? _scrolled : true;
+    // White nav bar on both breakpoints — it sits on the navy hero rather
+    // than blending into it, so (unlike a navy bar matching a navy hero) it
+    // always needs its own separation shadow to read as intentional.
+    const navBackground = AppColors.white;
     return Scaffold(
       backgroundColor: AppColors.offWhite,
       endDrawer: _MobileNavDrawer(
@@ -75,7 +52,6 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
         onGetOnboarded: widget.onGetOnboarded,
       ),
       body: CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverAppBar(
             pinned: true,
@@ -84,17 +60,19 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
             toolbarHeight: 76,
             titleSpacing: 0,
             automaticallyImplyLeading: false,
-            // Without an explicit (empty) actions list, AppBar auto-inserts
-            // its own EndDrawerButton here because the Scaffold has an
-            // endDrawer — showing up as a second hamburger icon alongside
-            // the one _NavBar already draws inside flexibleSpace.
-            actions: const [],
+            // AppBar auto-inserts its own EndDrawerButton here whenever the
+            // Scaffold has an endDrawer and `actions` is null OR empty — an
+            // empty list still counts as "not provided" (it checks
+            // isNotEmpty), so that button showed up as a second hamburger
+            // right on top of the one _NavBar draws itself. A throwaway
+            // zero-size widget makes the list genuinely non-empty.
+            actions: const [SizedBox.shrink()],
             flexibleSpace: AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOut,
               decoration: BoxDecoration(
                 color: navBackground,
-                boxShadow: showNavShadow ? [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 16, offset: const Offset(0, 4))] : null,
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 16, offset: const Offset(0, 4))],
               ),
               child: SafeArea(
                 bottom: false,
@@ -375,7 +353,7 @@ class _NavLink extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Text(label, style: AppTextStyles.body(color: AppColors.white.withValues(alpha: 0.88), size: 14, weight: FontWeight.w600)),
+        child: Text(label, style: AppTextStyles.body(color: AppColors.navy.withValues(alpha: 0.8), size: 14, weight: FontWeight.w600)),
       ),
     );
   }
@@ -428,7 +406,7 @@ class _HeroSection extends StatelessWidget {
                   ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: isWide ? 480 : double.infinity),
                     child: Text(
-                      'Tenants, landlords and vendors, connected directly — with everything you need to move in built right in.',
+                      'Tenants, landlords and vendors, all connected in one place.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.body(color: AppColors.white.withValues(alpha: 0.85), size: isWide ? 16 : 14.5),
                     ),
@@ -481,9 +459,9 @@ class _AboutSection extends StatelessWidget {
   final bool isWide;
 
   static const _steps = [
-    ('01', 'Browse Verified Listings', 'Houses, shortlets, self-cons and apartments across Nigeria — real photos, real details.'),
-    ('02', 'Message Landlords Directly', 'Skip the agent. Ask questions and book viewings straight from the app.'),
-    ('03', 'Shop the Marketplace', 'Furniture, appliances and fittings from vetted vendors, ready for move-in day.'),
+    ('01', 'Browse Verified Listings', 'Houses, shortlets, self-cons and apartments across Nigeria.'),
+    ('02', 'Message Landlords Directly', 'Skip the agent. Ask questions and book inspections straight from the app.'),
+    ('03', 'Shop the Marketplace', 'Furniture, appliances and fittings from vetted vendors.'),
   ];
 
   @override
@@ -500,7 +478,7 @@ class _AboutSection extends StatelessWidget {
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: isWide ? 620 : double.infinity),
               child: Text(
-                'Built for how Nigerians actually find a home',
+                'Built to help Nigerians find a place they can call home.',
                 style: AppTextStyles.heading(color: AppColors.navy, size: isWide ? 34 : 25),
               ),
             ),
@@ -508,7 +486,7 @@ class _AboutSection extends StatelessWidget {
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: isWide ? 620 : double.infinity),
               child: Text(
-                'House hunting in Nigeria has always meant endless agent calls, listings you can\'t verify, and no real way to know who you\'re dealing with. Home Servant fixes that with one honest platform — and doesn\'t stop once you\'ve found a place, either: our built-in marketplace means furnishing it doesn\'t mean starting a whole new search.',
+                'House hunting in Nigeria shouldn’t mean endless calls to agents, unverified listings, or uncertainty about who you’re dealing with. Home Servant changes that. One trusted platform to discover homes, connect with verified people, and move with confidence. And we don’t stop at helping you find a place to live. With our built-in marketplace, you can furnish your new home without starting the search all over again. From finding a home to making it yours, Home Servant keeps everything in one place.',
                 style: AppTextStyles.body(color: AppColors.hintGrey, size: 15.5, weight: FontWeight.w400),
               ),
             ),
@@ -591,7 +569,7 @@ class _WhatWereBuildingSection extends StatelessWidget {
   static const _upcoming = [
     'Verified property listings, updated across every state in Nigeria',
     'Real-time chat with landlords and marketplace vendors',
-    'Secure in-app payments — no more cash handovers to strangers',
+    'Secure in-app payments, no more cash handovers to strangers',
     'A built-in marketplace for everything you need to move in',
     'One place to track viewings, applications and bookings',
   ];
@@ -610,7 +588,7 @@ class _WhatWereBuildingSection extends StatelessWidget {
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: isWide ? 780 : double.infinity),
               child: Text(
-                'We\'re building the Home Servant app — and it\'s going to change house hunting in Nigeria forever.',
+                'We’re getting ready to launch Home Servant — a smarter, simpler way to find a home in Nigeria.',
                 style: AppTextStyles.heading(color: AppColors.white, size: isWide ? 32 : 23),
               ),
             ),
@@ -618,7 +596,7 @@ class _WhatWereBuildingSection extends StatelessWidget {
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: isWide ? 640 : double.infinity),
               child: Text(
-                'What you\'re using right now is an early preview. The full Home Servant app is in active development — designed to take every frustrating part of finding a home in Nigeria and replace it with one trustworthy, mobile-first experience.',
+                'The Home Servant app is in active development, designed to take every frustrating part of finding a home in Nigeria and replace it with one trustworthy, mobile-first experience.',
                 style: AppTextStyles.body(color: AppColors.white.withValues(alpha: 0.75), size: 15),
               ),
             ),
@@ -697,7 +675,7 @@ class _CtaCard extends StatelessWidget {
           Text('Download the Home Servant App', style: AppTextStyles.body(color: AppColors.white, size: 17, weight: FontWeight.w700)),
           const SizedBox(height: 8),
           Text(
-            'Get first access the moment we launch — on Android and iOS.',
+            'Get first access the moment we launch on Android and iOS.',
             style: AppTextStyles.body(color: AppColors.white.withValues(alpha: 0.7), size: 13.5),
           ),
           const SizedBox(height: 22),
@@ -800,7 +778,7 @@ class _GetOnboardedSection extends StatelessWidget {
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: isWide ? 480 : double.infinity),
           child: Text(
-            'Home Servant hasn\'t fully launched yet — but you can list your property right now. Landlords who get onboarded early get priority placement the moment we go live.',
+            'Home Servant hasn\'t fully launched yet, but you can list your property right now. Landlords who get onboarded early get priority placement the moment we go live.',
             style: AppTextStyles.body(color: AppColors.landlordText.withValues(alpha: 0.75), size: 14.5),
           ),
         ),
@@ -842,7 +820,7 @@ class _Footer extends StatelessWidget {
     final brand = Column(
       crossAxisAlignment: isWide ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
-        Image.asset('assets/icons/logo6.png', height: 32),
+        Image.asset('assets/icons/logo7.png', height: 32),
         const SizedBox(height: 14),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 260),

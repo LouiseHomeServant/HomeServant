@@ -10,6 +10,7 @@ import '../../state/app_state.dart';
 import '../../widgets/app_lock_pin_sheet.dart';
 import '../../widgets/support_sheet.dart';
 import '../auth/verify_otp_screen.dart';
+import 'legal/tenancy_agreements_screen.dart';
 import 'privacy&terms_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -178,6 +179,15 @@ class SettingsScreen extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (_) => LegalDocumentScreen(theme: theme, kind: LegalDocumentKind.termsOfService),
                           ),
+                        ),
+                  ),
+                  _NavRow(
+                    theme: theme,
+                    icon: Icons.gavel_rounded,
+                    label: 'Tenancy Agreements',
+                    onTap:
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => TenancyAgreementsScreen(theme: theme)),
                         ),
                     showDivider: false,
                   ),
